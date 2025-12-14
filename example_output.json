@@ -1,0 +1,30 @@
+{
+  "vendor_name": "Example Vendor Company",
+  "vendor_address": "123 Business Street\nSuite 100\nCity, State 12345",
+  "bill_to_name": "Customer Corporation",
+  "invoice_number": "INV-2024-001",
+  "date": "2024-01-15",
+  "line_items": [
+    {
+      "sku": "PROD-001",
+      "description": "Product Description One",
+      "quantity": 10.0,
+      "price": 25.50,
+      "tax_rate": 8.5,
+      "total": 255.00
+    },
+    {
+      "sku": "PROD-002",
+      "description": "Product Description Two",
+      "quantity": 5.0,
+      "price": 15.00,
+      "tax_rate": 8.5,
+      "total": 75.00
+    }
+  ],
+  "_metadata": {
+    "source_file": "example_invoice.pdf",
+    "extraction_timestamp": null
+  }
+}
+

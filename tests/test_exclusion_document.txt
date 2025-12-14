@@ -1,0 +1,11 @@
+This is a test document to verify exclusion logic.
+
+This document does not contain invoice information.
+It is just a plain text document without:
+- Invoice numbers
+- Dates in invoice format
+- Price information
+- Line items
+
+This should be excluded by the format validation logic.
+
