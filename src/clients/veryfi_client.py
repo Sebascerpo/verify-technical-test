@@ -5,20 +5,17 @@ Handles communication with Veryfi OCR API to extract text from PDF documents.
 """
 
 import os
-import logging
 from typing import Optional, Dict, Any, List
 from dotenv import load_dotenv
 import veryfi
+from ..core.logging_config import get_logger
+from ..core.retry import retry
+from ..core.exceptions import APIError
 
 # Load environment variables
 load_dotenv()
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class VeryfiClient:
@@ -75,20 +72,18 @@ class VeryfiClient:
         try:
             logger.info(f"Processing document: {file_path}")
             
-            # Process document with Veryfi API
-            response = self.client.process_document(file_path)
+            # Process document with Veryfi API (with retry)
+            @retry(exceptions=(Exception,))
+            def _process():
+                return self.client.process_document(file_path)
+            
+            response = _process()
             
             logger.info(f"Successfully processed document: {file_path}")
             return response
             
-        except veryfi.exceptions.HTTPError as e:
-            logger.error(f"HTTP error processing {file_path}: {str(e)}")
-            raise
-        except veryfi.exceptions.BadRequest as e:
-            logger.error(f"Bad request for {file_path}: {str(e)}")
-            raise
         except Exception as e:
-            logger.error(f"Unexpected error processing {file_path}: {str(e)}")
+            logger.error(f"Error processing {file_path}: {str(e)}")
             raise
     
     def extract_ocr_text(self, file_path: str) -> Optional[str]:

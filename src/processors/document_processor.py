@@ -5,17 +5,12 @@ Handles batch processing of PDF documents and file management.
 """
 
 import os
-import logging
 from typing import List, Dict, Optional, Any
 from pathlib import Path
-from .veryfi_client import VeryfiClient
+from ..clients.veryfi_client import VeryfiClient
+from ..core.logging_config import get_logger
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 
 class DocumentProcessor:
