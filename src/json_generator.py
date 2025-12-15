@@ -81,12 +81,21 @@ class JSONGenerator:
             }
             json_output['line_items'].append(line_item)
         
-        # Add metadata if filename provided
+        # Calculate metadata fields
+        line_item_count = len(json_output['line_items'])
+        total_amount = sum(item.get('total', 0.0) for item in json_output['line_items'])
+        
+        # Add metadata
+        metadata = {
+            'line_item_count': line_item_count,
+            'total_amount': round(total_amount, 2)  # Round to 2 decimal places for currency
+        }
+        
         if filename:
-            json_output['_metadata'] = {
-                'source_file': filename,
-                'extraction_timestamp': datetime.now().isoformat()
-            }
+            metadata['source_file'] = filename
+            metadata['extraction_timestamp'] = datetime.now().isoformat()
+        
+        json_output['_metadata'] = metadata
         
         return json_output
     

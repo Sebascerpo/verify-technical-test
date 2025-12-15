@@ -7,7 +7,7 @@
   "line_items": [
     {
       "sku": "",
-      "description": "Carrier Taxes for Transport | 58 Gbps Wavelength Diverse between Sparks, OR 98765 and LasVegas, OR 56789 (10/2023 Taxes)",
+      "description": "Carrier Taxes for Transport, 58 Gbps Wavelength Diverse between Sparks, OR 98765 and LasVegas, OR 56789",
       "quantity": 6016.09,
       "price": -1781.87,
       "tax_rate": 0.0,
@@ -15,7 +15,7 @@
     },
     {
       "sku": "",
-      "description": "Transport | 971 Gbps Fiber to wXv21fam",
+      "description": "Transport, 971 Gbps Fiber",
       "quantity": 3372.59,
       "price": 3868.31,
       "tax_rate": 0.0,
@@ -23,7 +23,7 @@
     },
     {
       "sku": "",
-      "description": "Carrier Taxes for Transport | 486 Gbps Wavelength Diverse between Hillsboro, NV 56789 and Portland, NV 56789 (05/2023 Taxes)",
+      "description": "Carrier Taxes for Transport, 486 Gbps Wavelength Diverse between Hillsboro, NV 56789 and Portland, NV 56789",
       "quantity": 3593.22,
       "price": 4915.32,
       "tax_rate": 0.0,
@@ -31,7 +31,7 @@
     },
     {
       "sku": "8963157731",
-      "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (01/2024|10 Gbps Fiber to dHrINDY",
+      "description": "Transport, Switch Fiber Pair, Pairs, 10 Gbps Fiber",
       "quantity": 1714.46,
       "price": 1186.61,
       "tax_rate": 0.0,
@@ -39,7 +39,7 @@
     },
     {
       "sku": "6450580404",
-      "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (01/2024 | 10 Gbps Fiber to 14AIFIIqmG",
+      "description": "Transport, Switch Fiber Pair, Pairs, 10 Gbps Fiber",
       "quantity": 3078.56,
       "price": 5076.42,
       "tax_rate": 0.0,
@@ -47,7 +47,7 @@
     },
     {
       "sku": "9818139719",
-      "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (04/2023|10 Gbps Fiber to gGPS1 Ef6",
+      "description": "Transport, Switch Fiber Pair, Pairs, 10 Gbps Fiber",
       "quantity": 6480.38,
       "price": 1340.91,
       "tax_rate": 0.0,
@@ -55,7 +55,9 @@
     }
   ],
   "_metadata": {
+    "line_item_count": 6,
+    "total_amount": 46340224.75,
     "source_file": "synth-switch_v5-7.pdf",
-    "extraction_timestamp": "2025-12-15T00:38:55.389806"
+    "extraction_timestamp": "2025-12-15T07:43:26.263604"
   }
 }

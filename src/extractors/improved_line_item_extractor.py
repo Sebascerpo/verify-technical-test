@@ -30,7 +30,7 @@ class ImprovedLineItemExtractor:
         - Reference: https://faq.veryfi.com/en/articles/5571268-document-data-extraction-fields-explained
         
         **Format**: Numeric codes in parentheses, e.g., "(12345)", "(67890)"
-        - Pattern: r'\\((\d{3,12})\\)' - matches 3-12 digits in parentheses
+        - Pattern: matches 3-12 digits in parentheses (numeric only)
         - Excludes dates (e.g., "10/2023"), alphanumeric codes, and years (1900-2100)
         
         **Examples**:
@@ -510,33 +510,13 @@ class ImprovedLineItemExtractor:
             
             try:
                 tax_amount = float(nums[-1].replace(',', ''))
-                logger.debug(f"Found tax amount: {tax_amount}")
-                return tax_amount
+                if tax_amount > 0:
+                    logger.debug(f"Found tax amount: {tax_amount}")
+                    return tax_amount
             except (ValueError, IndexError):
                 pass
         
         return None
-    
-    def _calculate_tax_rate_from_ocr(self, ocr_text: Optional[str]) -> Optional[float]:
-        """
-        Calculate tax rate from OCR text using percentage or amounts.
-        
-        Args:
-            ocr_text: OCR text from invoice
-            
-        Returns:
-            Tax rate as percentage, or None if not found
-        """
-        if not ocr_text:
-            return None
-        
-        # Try percentage first
-        rate = self._extract_tax_rate_from_ocr_percentage(ocr_text)
-        if rate is not None:
-            return rate
-        
-        # Try amounts
-        return self._extract_tax_rate_from_ocr_amounts(ocr_text)
     
     def extract_and_improve_line_items(
         self,
@@ -604,16 +584,16 @@ class ImprovedLineItemExtractor:
         
         # Ensure price consistency with total
         price = self._ensure_price_consistency(item.get('price', 0.0), item.get('total', 0.0), item_index)
-        
-        # Create improved item
+            
+            # Create improved item
         improved_item = {
-            'sku': sku,
-            'description': clean_desc,
-            'quantity': item.get('quantity', 0.0),
-            'price': price,
-            'tax_rate': item_tax_rate,
-            'total': item.get('total', 0.0)
-        }
+                'sku': sku,
+                'description': clean_desc,
+                'quantity': item.get('quantity', 0.0),
+                'price': price,
+                'tax_rate': item_tax_rate,
+                'total': item.get('total', 0.0)
+            }
         
         # Log improvements
         self._log_item_improvements(sku, existing_sku, description, item_index)
@@ -651,19 +631,112 @@ class ImprovedLineItemExtractor:
     
     def _clean_line_item_description(self, description: str, item_index: int) -> str:
         """
-        Clean line item description by removing parenthetical codes.
+        Clean and format line item description for professional invoice output.
+        
+        This method produces descriptions that are:
+        - Clear and readable
+        - Free of technical codes/dates
+        - Properly formatted with consistent separators
+        - Business-appropriate
+        
+        Cleaning steps:
+        1. Remove all parenthetical codes (dates, SKUs, technical references)
+        2. Remove technical codes (alphanumeric ID-like strings)
+        3. Replace pipe separators (|) with commas for consistent formatting
+        4. Normalize whitespace and clean up formatting
         
         Args:
             description: Original description
             item_index: Item index for logging
             
         Returns:
-            Cleaned description
+            Cleaned and formatted description
         """
-        # Remove all parenthetical codes (SKUs and dates)
-        clean_desc = re.sub(r'\([A-Za-z0-9/]+\)', '', description)
-        # Clean up extra whitespace
+        if not description:
+            return description
+        
+        clean_desc = description
+        
+        # Step 1: Extract bandwidth/speed specifications from parenthetical content before removing it
+        # Patterns: "10 Gbps Fiber", "58 Gbps", "971 Gbps", "100 Mbps", etc.
+        bandwidth_specs = []
+        
+        # Find all parenthetical content
+        parenthetical_matches = re.finditer(r'\([^)]*\)', description)
+        for match in parenthetical_matches:
+            paren_content = match.group(0)  # Includes parentheses
+            # Extract bandwidth specs from parenthetical content
+            # Pattern: digits followed by Gbps/Mbps, optionally followed by "Fiber"
+            bandwidth_patterns = [
+                r'(\d+\s*Gbps\s*Fiber)',  # "10 Gbps Fiber"
+                r'(\d+\s*Gbps)',           # "58 Gbps", "971 Gbps"
+                r'(\d+\s*Mbps)',           # "100 Mbps"
+            ]
+            for pattern in bandwidth_patterns:
+                spec_matches = re.finditer(pattern, paren_content, re.IGNORECASE)
+                for spec_match in spec_matches:
+                    spec = spec_match.group(1).strip()
+                    if spec and spec not in bandwidth_specs:
+                        bandwidth_specs.append(spec)
+        
+        # Also check for bandwidth specs outside parentheses (in case they're not in parentheses)
+        for pattern in [r'(\d+\s*Gbps\s*Fiber)', r'(\d+\s*Gbps)', r'(\d+\s*Mbps)']:
+            all_specs = re.finditer(pattern, description, re.IGNORECASE)
+            for spec_match in all_specs:
+                spec = spec_match.group(1).strip()
+                # Only add if not already in the main description (avoid duplicates)
+                if spec and spec not in bandwidth_specs:
+                    # Check if it's already in the description (not in parentheses)
+                    spec_in_main = re.search(rf'\b{re.escape(spec)}\b', clean_desc.replace('(', '').replace(')', ''), re.IGNORECASE)
+                    if not spec_in_main:
+                        bandwidth_specs.append(spec)
+        
+        # Step 2: Remove all parenthetical codes (dates, SKUs, technical references)
+        # This includes patterns like (04/2023), (Intra-campus), (10/2023 Taxes), etc.
+        clean_desc = re.sub(r'\([^)]*\)', '', clean_desc)
+        
+        # Step 2: Remove technical codes (alphanumeric ID-like strings)
+        # Pattern: Technical codes that are clearly IDs, not real words
+        # Examples: "wXv21fam", "HOEpyb", "YDDTJOrnuW", "3XMOyFdB", "dHrINDY", "14AIFIIqmG"
+        # These typically:
+        # - Start with numbers or have numbers in the middle
+        # - Are 6-15 characters
+        # - Appear after "to" or at the end of phrases
+        # Remove patterns like "to wXv21fam" or "Fiber to dHrINDY"
+        clean_desc = re.sub(r'\bto\s+[A-Za-z0-9]{6,15}\b', '', clean_desc, flags=re.IGNORECASE)
+        # Remove technical codes that start with numbers (like "14AIFIIqmG", "3XMOyFdB")
+        clean_desc = re.sub(r'\b\d+[A-Za-z0-9]{5,14}\b', '', clean_desc)
+        # Remove codes with numbers in the middle (like "wXv21fam")
+        clean_desc = re.sub(r'\b[A-Za-z]{2,}\d+[A-Za-z]{2,}\b', '', clean_desc)
+        
+        # Step 3: Replace pipe separators (|) with commas for consistent formatting
+        # Handle both " | " and "|" patterns, normalize to ", "
+        clean_desc = re.sub(r'\s*\|\s*', ', ', clean_desc)
+        
+        # Step 4: Normalize whitespace
+        # Replace multiple spaces with single space, remove leading/trailing whitespace
         clean_desc = ' '.join(clean_desc.split()).strip()
+        
+        # Remove trailing commas and clean up comma spacing
+        clean_desc = re.sub(r',\s*,', ',', clean_desc)  # Remove double commas
+        clean_desc = re.sub(r',\s*$', '', clean_desc)  # Remove trailing comma
+        clean_desc = re.sub(r'^\s*,\s*', '', clean_desc)  # Remove leading comma
+        clean_desc = clean_desc.strip()
+        
+        # Step 5: Append extracted bandwidth specifications to the cleaned description
+        # Only add specs that aren't already in the cleaned description
+        for spec in bandwidth_specs:
+            # Check if spec is already in the cleaned description
+            spec_normalized = re.escape(spec)
+            if not re.search(rf'\b{spec_normalized}\b', clean_desc, re.IGNORECASE):
+                if clean_desc:
+                    clean_desc = f"{clean_desc}, {spec}"
+                else:
+                    clean_desc = spec
+        
+        # Final cleanup: normalize whitespace again after adding specs
+        clean_desc = ' '.join(clean_desc.split()).strip()
+        clean_desc = re.sub(r',\s*,', ',', clean_desc)  # Remove double commas again
         
         # If description became empty after cleaning, use original
         if not clean_desc:

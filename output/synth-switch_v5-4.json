@@ -7,7 +7,7 @@
   "line_items": [
     {
       "sku": "4419693704",
-      "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (04/2023 | 10 Gbps Fiber to HOEpyb",
+      "description": "Transport, Switch Fiber Pair, Pairs, 10 Gbps Fiber",
       "quantity": 2912.98,
       "price": 934.09,
       "tax_rate": 0.0,
@@ -15,7 +15,7 @@
     },
     {
       "sku": "",
-      "description": "Carrier Taxes for Transport | 230 Gbps Wavelength Diverse between Sparks, OR 56789 and Plano, NV 98765 (07/2023 Taxes)",
+      "description": "Carrier Taxes for Transport, 230 Gbps Wavelength Diverse between Sparks, OR 56789 and Plano, NV 98765",
       "quantity": 3500.87,
       "price": 6229.33,
       "tax_rate": 0.0,
@@ -39,7 +39,7 @@
     },
     {
       "sku": "",
-      "description": "Transport | 82 Gbps Fiber to YDDTJOrnuW",
+      "description": "Transport, 82 Gbps Fiber",
       "quantity": 5607.34,
       "price": 656.07,
       "tax_rate": 0.0,
@@ -47,7 +47,7 @@
     },
     {
       "sku": "",
-      "description": "Carrier Taxes for Transport | 45 Gbps Wavelength Diverse between Hillsboro, NV 98765 and Portland, TX 56789 (05/2023 Taxes)",
+      "description": "Carrier Taxes for Transport, 45 Gbps Wavelength Diverse between Hillsboro, NV 98765 and Portland, TX 56789",
       "quantity": 3949.46,
       "price": 7128.95,
       "tax_rate": 0.0,
@@ -55,7 +55,7 @@
     },
     {
       "sku": "",
-      "description": "Transport | 97 Gbps Fiber to 3XMOyFdB",
+      "description": "Transport, 97 Gbps Fiber",
       "quantity": 942.71,
       "price": 1918.01,
       "tax_rate": 0.0,
@@ -63,7 +63,9 @@
     }
   ],
   "_metadata": {
+    "line_item_count": 7,
+    "total_amount": 58164641.64,
     "source_file": "synth-switch_v5-4.pdf",
-    "extraction_timestamp": "2025-12-15T00:38:55.392593"
+    "extraction_timestamp": "2025-12-15T07:43:26.265189"
   }
 }
