@@ -56,6 +56,19 @@ class ProcessingService:
             Result indicating success or failure
         """
         try:
+            # Validate file path
+            file_path_obj = Path(file_path)
+            if not file_path_obj.exists():
+                error_msg = f"File not found: {file_path}"
+                logger.error(error_msg)
+                return Result.failure_result(error_msg)
+            if not file_path_obj.is_file():
+                error_msg = f"Path is not a file: {file_path}"
+                logger.error(error_msg)
+                return Result.failure_result(error_msg)
+            
+            logger.info(f"Processing file: {file_path}")
+            
             if not self.processor:
                 self.processor = DocumentProcessor()
             
@@ -63,7 +76,9 @@ class ProcessingService:
             result = self.processor.process_document_by_path(file_path)
             
             if not result:
-                return Result.failure_result(f"Failed to process {file_path}")
+                error_msg = f"Failed to get API response for file: {file_path}"
+                logger.error(error_msg)
+                return Result.failure_result(error_msg)
             
             response = result.get('response')
             ocr_text = result.get('ocr_text', '')
@@ -77,6 +92,8 @@ class ProcessingService:
             )
             
             if invoice_result.is_failure():
+                error = invoice_result.get_error()
+                logger.warning(f"Failed to process invoice {filename}: {error}")
                 return invoice_result
             
             invoice_data = invoice_result.get_value()
@@ -89,9 +106,11 @@ class ProcessingService:
             )
             
             if save_result.is_failure():
+                error = save_result.get_error()
+                logger.error(f"Failed to save invoice data for {filename}: {error}")
                 return save_result
             
-            logger.info(f"Successfully processed {filename}")
+            logger.info(f"✓ Successfully processed and saved {filename} to {output_path}")
             return Result.success_result(True)
                 
         except Exception as e:
@@ -153,8 +172,10 @@ class ProcessingService:
                             error = invoice_result.get_error()
                             if "does not match expected invoice format" in (error or ""):
                                 excluded += 1
+                                logger.info(f"✗ Excluded {filename} (format validation failed)")
                             else:
                                 failed += 1
+                                logger.warning(f"✗ Failed to process {filename}: {error}")
                             continue
                         
                         invoice_data = invoice_result.get_value()
@@ -167,6 +188,8 @@ class ProcessingService:
                         )
                         
                         if save_result.is_failure():
+                            error = save_result.get_error()
+                            logger.error(f"✗ Failed to save {filename}: {error}")
                             failed += 1
                             continue
                         
@@ -175,7 +198,7 @@ class ProcessingService:
                         logger.info(f"✓ Successfully processed {filename}")
                         
                     except Exception as e:
-                        logger.error(f"Error processing {filename}: {str(e)}")
+                        logger.error(f"✗ Unexpected error processing {filename}: {str(e)}", exc_info=True)
                         failed += 1
                 
                 # Save combined JSON file

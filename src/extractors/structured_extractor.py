@@ -133,13 +133,13 @@ class StructuredExtractor(BaseExtractor):
         return None
     
     def _empty_result(self) -> Dict[str, Any]:
-        """Return empty result structure."""
+        """Return empty result structure with empty strings for consistency."""
         return {
-            'vendor_name': None,
-            'vendor_address': None,
-            'bill_to_name': None,
-            'invoice_number': None,
-            'date': None,
+            'vendor_name': '',
+            'vendor_address': '',
+            'bill_to_name': '',
+            'invoice_number': '',
+            'date': '',
             'line_items': []
         }
 

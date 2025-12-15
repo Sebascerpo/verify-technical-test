@@ -74,13 +74,28 @@ class InvoiceService:
             # Get OCR text if not provided
             if ocr_text is None and response:
                 ocr_text = response.get('ocr_text', '')
+                if not ocr_text:
+                    logger.warning(
+                        f"Response received but ocr_text field is missing or empty"
+                        + (f" for file: {filename}" if filename else "")
+                    )
+            
+            # Check for empty OCR text
+            if not ocr_text or not ocr_text.strip():
+                error_msg = "No OCR text available. Cannot process invoice without OCR data."
+                if filename:
+                    error_msg += f" File: {filename}"
+                logger.error(error_msg)
+                return Result.failure_result(error_msg)
             
             # Validate format if we have OCR text
             if ocr_text:
                 if not self.format_validator.is_valid_invoice_format(ocr_text):
-                    return Result.failure_result(
-                        f"Document does not match expected invoice format"
-                    )
+                    error_msg = "Document does not match expected invoice format"
+                    if filename:
+                        error_msg += f" (file: {filename})"
+                    logger.warning(error_msg)
+                    return Result.failure_result(error_msg)
                 
                 # Extract data
                 invoice_data = self.extractor.extract_all_fields(
@@ -96,14 +111,20 @@ class InvoiceService:
                 
                 # Validate JSON structure
                 if not self.data_validator.validate(json_data):
-                    logger.warning("Generated JSON does not match expected structure")
+                    warning_msg = "Generated JSON does not match expected structure"
+                    if filename:
+                        warning_msg += f" (file: {filename})"
+                    logger.warning(warning_msg)
                     # Still return data, but log warning
                 
                 return Result.success_result(json_data)
                 
         except Exception as e:
-            logger.error(f"Error processing invoice: {str(e)}", exc_info=True)
-            return Result.failure_result(f"Failed to process invoice: {str(e)}")
+            error_msg = f"Failed to process invoice: {str(e)}"
+            if filename:
+                error_msg += f" (file: {filename})"
+            logger.error(error_msg, exc_info=True)
+            return Result.failure_result(error_msg)
     
     def save_invoice(
         self,
@@ -124,6 +145,7 @@ class InvoiceService:
             self.json_generator.save_json(invoice_data, output_path)
             return Result.success_result(True)
         except Exception as e:
-            logger.error(f"Error saving invoice: {str(e)}", exc_info=True)
-            return Result.failure_result(f"Failed to save invoice: {str(e)}")
+            error_msg = f"Failed to save invoice to {output_path}: {str(e)}"
+            logger.error(error_msg, exc_info=True)
+            return Result.failure_result(error_msg)
 

@@ -11,6 +11,8 @@ from .structured_extractor import StructuredExtractor
 from .line_item_extractor import LineItemExtractor
 from ..core.logging_config import get_logger
 from ..config.settings import get_settings
+from .improved_line_item_extractor import ImprovedLineItemExtractor
+
 
 logger = get_logger(__name__)
 settings = get_settings()
@@ -29,6 +31,7 @@ class HybridExtractor(BaseExtractor):
         self.ocr_extractor = OCRExtractor()
         self.structured_extractor = StructuredExtractor()
         self.line_item_extractor = LineItemExtractor()
+        self.improved_extractor = ImprovedLineItemExtractor()  # NEW
     
     def extract_all_fields(
         self,
@@ -67,6 +70,23 @@ class HybridExtractor(BaseExtractor):
             if not structured_data.get('line_items'):
                 ocr_data['line_items'] = self.line_item_extractor.extract_from_ocr(ocr_text)
         
+        
+        if response and settings.use_structured_data:
+            line_items = self.line_item_extractor.extract_from_structured(response)
+        elif ocr_text:
+            line_items = self.line_item_extractor.extract_from_ocr(ocr_text)
+        else:
+            line_items = []
+        
+        # IMPROVE line items with better SKU and tax rate (NEW)
+        if line_items:
+            line_items = self.improved_extractor.extract_and_improve_line_items(
+                line_items=line_items,
+                response=response,
+                ocr_text=ocr_text
+            )
+        
+        
         # Combine: structured data takes priority, OCR as fallback
         result = {
             'vendor_name': structured_data.get('vendor_name') or ocr_data.get('vendor_name') or None,
@@ -74,7 +94,7 @@ class HybridExtractor(BaseExtractor):
             'bill_to_name': structured_data.get('bill_to_name') or ocr_data.get('bill_to_name') or None,
             'invoice_number': structured_data.get('invoice_number') or ocr_data.get('invoice_number') or None,
             'date': structured_data.get('date') or ocr_data.get('date') or None,
-            'line_items': structured_data.get('line_items') or ocr_data.get('line_items') or []
+            'line_items': line_items  # Now improved!
         }
         
         # Log which source was used

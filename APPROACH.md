@@ -251,13 +251,16 @@ The system implements a **compliance-first hybrid extraction** strategy:
 **Exclusion Logic**:
 - Documents are validated **before** extraction begins using `FormatValidator`
 - If validation fails, the document is excluded and no JSON output is generated
-- The system returns a clear error message: "Document does not match expected invoice format"
+- The system returns a clear error message: "Document does not match expected invoice format" (with filename context)
 - Excluded documents are tracked separately from processing failures in batch operations
+- Detailed logging shows which validation criteria failed (keywords found/missing, price patterns, length)
 
 **Implementation**:
-- Validation happens in `InvoiceService.process_invoice()` before extraction
-- `FormatValidator.is_valid_invoice_format()` performs the checks
-- Excluded documents are logged but not processed further
+- Validation happens in `InvoiceService.process_invoice()` after OCR text validation but before extraction
+- `FormatValidator.is_valid_invoice_format()` performs the checks with detailed logging
+- Validation checks occur in order: keywords → price patterns → length
+- Each failed check logs specific details (e.g., "Found only 1/3 required keywords, Missing: ['total', 'date']")
+- Excluded documents are logged with INFO level and tracked in batch processing summary
 
 **Tested Case**:
 - ✅ **Non-supported invoice**: `non-supported-invoice/fv089090060802125EB48112325.pdf`
@@ -304,9 +307,26 @@ The system implements a **compliance-first hybrid extraction** strategy:
 
 ## Edge Cases Handled
 
+### Empty OCR Text
+- **Handling**: System explicitly checks for empty or missing OCR text before processing
+- **Error Message**: Clear error message: "No OCR text available. Cannot process invoice without OCR data."
+- **Location**: Validation occurs in `InvoiceService.process_invoice()` before format validation
+- **Logging**: Warning logged when response is received but OCR text field is missing or empty
+
 ### Missing Fields
-- All extraction methods return `None` or empty strings when fields are not found
+- All extraction methods return empty strings (not None) when fields are not found for consistency
 - JSON output includes empty strings for missing fields to maintain structure
+- `_empty_result()` method in extractors returns consistent structure with empty strings
+
+### Missing API Response
+- System handles cases where API response is None or missing OCR text field
+- Warning logged when response received but ocr_text field is missing
+- Clear error messages include filename context for debugging
+
+### File Validation
+- File existence and type validation before processing
+- Clear error messages: "File not found" or "Path is not a file"
+- Validation occurs in `ProcessingService.process_single_file()` before API calls
 
 ### Multiple Matches
 - For fields like dates and invoice numbers, the first valid match is used
@@ -320,6 +340,11 @@ The system implements a **compliance-first hybrid extraction** strategy:
 ### OCR Errors
 - Patterns are designed to be tolerant of common OCR errors
 - Text cleaning and normalization where appropriate
+
+### Invalid Invoice Format
+- Format validation occurs before extraction to save processing time
+- Detailed logging shows which validation criteria failed (keywords, price patterns, length)
+- Clear error messages include filename context
 
 ## Benefits of Hybrid Approach
 
@@ -422,9 +447,36 @@ The system implements a **compliance-first hybrid extraction** strategy:
 - **Structured Logging**: Centralized logging configuration
 
 ### Error Handling
-- Graceful error handling at each step
-- Logging for debugging and monitoring
+
+**Strategy**: The system uses a comprehensive error handling strategy with clear error messages and detailed logging.
+
+**Error Handling Approach**:
+1. **Result Pattern**: Uses `Result` objects for functional error handling without exceptions where appropriate
+2. **Exception Handling**: Try-except blocks catch and log exceptions with full context
+3. **Error Messages**: All error messages include filename context and specific failure reasons
+4. **Logging Levels**:
+   - **ERROR**: Critical failures (file not found, API errors, processing failures)
+   - **WARNING**: Recoverable issues (format validation failures, missing optional data)
+   - **INFO**: Processing progress and validation results
+   - **DEBUG**: Detailed debugging information (validation criteria details)
+
+**Error Context**:
+- All error messages include filename when available
+- Validation failures include specific criteria that failed
+- API errors include file path and error details
+- Processing errors include step where failure occurred
+
+**Graceful Degradation**:
 - Failed documents don't stop batch processing
+- Excluded documents are tracked separately from processing failures
+- System continues processing remaining documents even if some fail
+- Summary report shows success/failure/exclusion counts
+
+**Example Error Messages**:
+- `"File not found: invoices/missing.pdf"`
+- `"No OCR text available. Cannot process invoice without OCR data. File: invoice.pdf"`
+- `"Document does not match expected invoice format (file: invoice.pdf)"`
+- `"Format validation failed: Found only 1/3 required keywords (need 2). Found: ['invoice'], Missing: ['total', 'date']"`
 
 ## Conclusion
 

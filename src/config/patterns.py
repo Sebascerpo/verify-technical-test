@@ -31,8 +31,10 @@ class PatternConfig:
             re.compile(r'#\s*([A-Z0-9\-]{4,})', re.IGNORECASE),
         ]
         
-        # Price patterns (compiled)
-        self.price_pattern = re.compile(r'\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)')
+        # Price patterns (compiled) - updated to handle negative values
+        self.price_pattern = re.compile(r'[-\+]?\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)')
+        # Pattern to detect if price is negative (for discounts/credits)
+        self.negative_price_pattern = re.compile(r'-\$?\s*(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)')
         self.tax_rate_pattern = re.compile(r'(\d+\.?\d*)\s*%')
         
         # SKU patterns (compiled)
@@ -40,6 +42,10 @@ class PatternConfig:
             re.compile(r'sku\s*:?\s*([A-Z0-9\-]+)', re.IGNORECASE),
             re.compile(r'item\s*#\s*:?\s*([A-Z0-9\-]+)', re.IGNORECASE),
             re.compile(r'product\s*code\s*:?\s*([A-Z0-9\-]+)', re.IGNORECASE),
+            # Enhanced patterns for codes at line start
+            re.compile(r'^([A-Z0-9\-]{3,15})\s+', re.IGNORECASE),
+            # Codes in parentheses (common product code format)
+            re.compile(r'\(([A-Z0-9\-]{3,20})\)'),
         ]
         
         # Vendor patterns (compiled)
@@ -76,6 +82,10 @@ class PatternConfig:
     def get_price_pattern(self) -> Pattern:
         """Get compiled price pattern."""
         return self.price_pattern
+    
+    def get_negative_price_pattern(self) -> Pattern:
+        """Get compiled negative price pattern."""
+        return self.negative_price_pattern
     
     def get_tax_rate_pattern(self) -> Pattern:
         """Get compiled tax rate pattern."""

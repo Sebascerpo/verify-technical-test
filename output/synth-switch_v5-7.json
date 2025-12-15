@@ -7,50 +7,50 @@
   "line_items": [
     {
       "sku": "",
-      "description": "Carrier Taxes for Transport | 58 Gbps Wavelength Diverse between Sparks, OR 98765 and\nLasVegas, OR 56789 (ymEw7J) (U4M7QOSJ) (10/2023 Taxes) (10/2023)",
+      "description": "Carrier Taxes for Transport | 58 Gbps Wavelength Diverse between Sparks, OR 98765 and LasVegas, OR 56789 (10/2023 Taxes)",
       "quantity": 6016.09,
-      "price": 1781.87,
+      "price": -1781.87,
       "tax_rate": 0.0,
       "total": -10719890.29
     },
     {
-      "sku": "",
-      "description": "Transport | 971 Gbps Fiber to wXv21fam (X6HCHK1C) (10/2023)",
+      "sku": "X6HCHK1C",
+      "description": "Transport | 971 Gbps Fiber to wXv21fam",
       "quantity": 3372.59,
       "price": 3868.31,
-      "tax_rate": 0.0,
+      "tax_rate": 17.62,
       "total": 13046223.62
     },
     {
       "sku": "",
-      "description": "Carrier Taxes for Transport | 486 Gbps Wavelength Diverse between Hillsboro, NV 56789\nand Portland, NV 56789 (5FrLsxw) (JTUKEGVE) (05/2023 Taxes) (05/2023)",
+      "description": "Carrier Taxes for Transport | 486 Gbps Wavelength Diverse between Hillsboro, NV 56789 and Portland, NV 56789 (05/2023 Taxes)",
       "quantity": 3593.22,
       "price": 4915.32,
       "tax_rate": 0.0,
       "total": 17661826.13
     },
     {
-      "sku": "",
-      "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (8963157731) (01/2024|10 Gbps Fiber\nto dHrINDY (1OVAXL6A) (01/2024)",
+      "sku": "1OVAXL6A",
+      "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (01/2024|10 Gbps Fiber to dHrINDY",
       "quantity": 1714.46,
       "price": 1186.61,
-      "tax_rate": 0.0,
+      "tax_rate": 17.62,
       "total": 2034395.38
     },
     {
-      "sku": "",
-      "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (6450580404) (01/2024 | 10 Gbps Fiber\nto 14AIFIIqmG (5HI7G80Q) (01/2024)",
+      "sku": "5HI7G80Q",
+      "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (01/2024 | 10 Gbps Fiber to 14AIFIIqmG",
       "quantity": 3078.56,
       "price": 5076.42,
-      "tax_rate": 0.0,
+      "tax_rate": 17.62,
       "total": 15628063.56
     },
     {
-      "sku": "",
-      "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (9818139719) (04/2023|10 Gbps Fiber\nto gGPS1 Ef6 (C2NXECIF) (04/2023)",
+      "sku": "C2NXECIF",
+      "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (04/2023|10 Gbps Fiber to gGPS1 Ef6",
       "quantity": 6480.38,
       "price": 1340.91,
-      "tax_rate": 0.0,
+      "tax_rate": 17.62,
       "total": 8689606.35
     }
   ],

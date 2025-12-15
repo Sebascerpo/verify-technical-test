@@ -53,29 +53,45 @@ class FormatValidator(IValidator):
         """
         # Check for key invoice indicators
         required_keywords = ['invoice', 'total', 'date']
-        found_keywords = sum(
-            1 for keyword in required_keywords 
+        found_keywords_list = [
+            keyword for keyword in required_keywords 
             if keyword.lower() in ocr_text.lower()
-        )
+        ]
+        found_keywords = len(found_keywords_list)
         
         # Should have at least required number of keywords
         required_count = self.settings.required_keywords_count
         if found_keywords < required_count:
-            logger.debug(f"Found only {found_keywords} required keywords (need {required_count})")
+            logger.info(
+                f"Format validation failed: Found only {found_keywords}/{len(required_keywords)} "
+                f"required keywords (need {required_count}). "
+                f"Found: {found_keywords_list}, Missing: "
+                f"{[k for k in required_keywords if k not in found_keywords_list]}"
+            )
             return False
         
         # Check for price patterns (invoices should have prices)
         price_matches = self.patterns.get_price_pattern().findall(ocr_text)
         min_price_patterns = self.settings.min_price_patterns
         if len(price_matches) < min_price_patterns:
-            logger.debug(f"Found only {len(price_matches)} price patterns (need {min_price_patterns})")
+            logger.info(
+                f"Format validation failed: Found only {len(price_matches)} price patterns "
+                f"(need {min_price_patterns})"
+            )
             return False
         
         # Check for reasonable length
         min_length = self.settings.min_ocr_length
         if len(ocr_text) < min_length:
-            logger.debug(f"OCR text too short: {len(ocr_text)} < {min_length}")
+            logger.info(
+                f"Format validation failed: OCR text too short: {len(ocr_text)} characters "
+                f"(minimum required: {min_length})"
+            )
             return False
         
+        logger.debug(
+            f"Format validation passed: {found_keywords} keywords found, "
+            f"{len(price_matches)} price patterns, {len(ocr_text)} characters"
+        )
         return True
 
