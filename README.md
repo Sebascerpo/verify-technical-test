@@ -187,20 +187,6 @@ The system supports extensive configuration via environment variables:
 VERYFI_CLIENT_ID=your_client_id
 VERYFI_USERNAME=your_username
 VERYFI_API_KEY=your_api_key
-
-# Performance Settings
-ENABLE_CACHING=true          # Enable API response caching
-CACHE_TTL=3600               # Cache TTL in seconds (default: 1 hour)
-MAX_RETRIES=3                # Maximum retry attempts
-RETRY_DELAY=1.0              # Initial retry delay in seconds
-
-# Feature Flags
-USE_STRUCTURED_DATA=true     # Use Veryfi structured data
-USE_HYBRID_EXTRACTION=true   # Use hybrid extraction strategy
-ENABLE_PARALLEL_PROCESSING=false  # Enable parallel processing (future)
-
-# Logging
-LOG_LEVEL=INFO               # Logging level (DEBUG, INFO, WARNING, ERROR)
 ```
 
 ## Requirements
