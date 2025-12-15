@@ -14,7 +14,7 @@ The implementation fully complies with the technical test requirements:
 
 3. **Format Support**: The system supports documents with the same invoice format while excluding others through validation logic.
 
-4. **Testing**: Exclusion logic has been tested with a non-supported invoice document, which was correctly excluded.
+4. **Testing**: Exclusion logic has been tested with a non-supported invoice document (`non-supported-invoice/fv089090060802125EB48112325.pdf`), which was correctly excluded. This is a **required feature** of the technical test to ensure only compatible invoice formats are processed.
 
 ### Hybrid Approach Rationale
 
@@ -219,6 +219,36 @@ pytest tests/                    # Run all tests
 pytest tests/ --cov=src         # With coverage
 pytest tests/ -v                # Verbose output
 ```
+
+### Exclusion Testing
+
+**Purpose**: The technical test requires that the system supports documents with the same invoice format while excluding others. This is a critical requirement.
+
+**Test Case**: The system has been tested with a non-supported invoice document:
+- **File**: `non-supported-invoice/fv089090060802125EB48112325.pdf`
+- **Expected Behavior**: Document is correctly excluded (no JSON output generated)
+- **Validation**: The `FormatValidator` checks for required keywords, price patterns, and minimum length
+
+**How to Test Exclusion**:
+```bash
+# Test with the provided non-supported invoice
+python main.py --file non-supported-invoice/fv089090060802125EB48112325.pdf
+
+# Test with your own non-invoice document
+python main.py --file path/to/your/document.pdf
+```
+
+**Test Coverage**:
+- `test_integration.py::test_exclusion_non_supported_invoice` - Tests exclusion of non-supported invoice format
+- `test_integration.py::test_exclusion_logic` - Tests various exclusion scenarios
+- `test_integration.py::test_exclusion_with_actual_document_structure` - Tests with realistic non-invoice documents
+
+**Exclusion Criteria** (implemented in `FormatValidator`):
+1. Must contain at least 2 out of 3 keywords: "invoice", "total", "date"
+2. Must contain at least one price pattern (currency format)
+3. Must be at least 100 characters long
+
+Documents that don't meet these criteria are excluded before extraction begins, ensuring only compatible invoice formats are processed.
 
 ## Code Review Considerations
 

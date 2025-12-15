@@ -95,6 +95,27 @@ To add new extraction patterns:
 - Run with coverage: `pytest tests/ --cov=src`
 - Run specific test: `pytest tests/test_vendor_extraction.py`
 
+### Testing Exclusion Logic
+
+The system includes format validation to exclude non-compatible invoice documents. This is a **required feature** of the technical test.
+
+**Test the exclusion with the provided non-supported invoice**:
+```bash
+python main.py --file non-supported-invoice/fv089090060802125EB48112325.pdf
+```
+
+This should result in the document being excluded (no JSON output generated).
+
+**Unit tests for exclusion**:
+- `tests/test_integration.py::TestIntegration::test_exclusion_non_supported_invoice` - Tests exclusion logic
+- `tests/test_integration.py::TestIntegration::test_exclusion_logic` - Tests various exclusion scenarios
+
+**How exclusion works**:
+1. `FormatValidator` checks if document matches invoice format (keywords, price patterns, length)
+2. If validation fails, `InvoiceService` returns a failure result
+3. No extraction or JSON generation occurs for excluded documents
+4. Excluded documents are tracked separately in batch processing
+
 ## Code Style
 
 - Follow PEP 8

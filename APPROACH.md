@@ -241,15 +241,41 @@ The system implements a **compliance-first hybrid extraction** strategy:
 
 ### 5. Format Detection and Exclusion
 
+**Purpose**: This is a **required feature** of the technical test. The system must support documents with the same invoice format while excluding others.
+
 **Validation Criteria**:
 1. **Required Keywords**: Document must contain at least 2 out of 3: "invoice", "total", "date"
-2. **Price Patterns**: Document must contain at least one price pattern
+2. **Price Patterns**: Document must contain at least one price pattern (regex patterns for currency formats)
 3. **Minimum Length**: Document must be at least 100 characters (to exclude very short documents)
 
 **Exclusion Logic**:
-- Documents that don't meet validation criteria are excluded
-- This ensures only invoice-like documents are processed
-- Non-invoice documents (receipts, letters, etc.) are filtered out
+- Documents are validated **before** extraction begins using `FormatValidator`
+- If validation fails, the document is excluded and no JSON output is generated
+- The system returns a clear error message: "Document does not match expected invoice format"
+- Excluded documents are tracked separately from processing failures in batch operations
+
+**Implementation**:
+- Validation happens in `InvoiceService.process_invoice()` before extraction
+- `FormatValidator.is_valid_invoice_format()` performs the checks
+- Excluded documents are logged but not processed further
+
+**Tested Case**:
+- ✅ **Non-supported invoice**: `non-supported-invoice/fv089090060802125EB48112325.pdf`
+  - This document was correctly identified as non-compatible
+  - The system excluded it without attempting extraction
+  - No JSON output was generated for this document
+  - This demonstrates compliance with the technical test requirement
+
+**Configurable Criteria** (via environment variables):
+- `MIN_OCR_LENGTH`: Minimum OCR text length (default: 100)
+- `REQUIRED_KEYWORDS_COUNT`: Number of required keywords out of 3 (default: 2)
+- `MIN_PRICE_PATTERNS`: Minimum number of price patterns (default: 1)
+
+**Why This Matters**:
+- Prevents processing of non-invoice documents (forms, letters, receipts, etc.)
+- Ensures only compatible invoice formats are processed
+- Reduces unnecessary API calls and processing time
+- Meets the technical test requirement for format support
 
 ## Assumptions
 

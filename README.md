@@ -162,14 +162,32 @@ The system extracts all required fields **from the `ocr_text` field** as specifi
 
 ## Exclusion Testing
 
-The system includes format validation to exclude documents that don't match the expected invoice format. This has been tested with:
-- ✅ Valid invoice documents (processed successfully)
-- ✅ Non-supported invoice document (`non-supported-invoice/fv089090060802125EB48112325.pdf` - correctly excluded)
+The system includes format validation to exclude documents that don't match the expected invoice format. This is a **required feature** of the technical test to ensure only compatible invoice formats are processed.
+
+### How Exclusion Works
+
+The system uses `FormatValidator` to check if a document matches the expected invoice format before processing. Documents are excluded if they don't meet these criteria:
+
+1. **Required Keywords**: Must contain at least 2 out of 3 keywords: "invoice", "total", "date"
+2. **Price Patterns**: Must contain at least one price pattern (e.g., $10.00, 10.00 USD)
+3. **Minimum Length**: Must be at least 100 characters (to exclude very short documents)
+
+### Tested Cases
+
+The exclusion logic has been tested with:
+- ✅ **Valid invoice documents** (processed successfully)
+- ✅ **Non-supported invoice document** (`non-supported-invoice/fv089090060802125EB48112325.pdf` - correctly excluded)
+
+The non-supported invoice case demonstrates that the system correctly identifies and excludes documents that don't match the expected invoice format, as required by the technical test.
+
+### Testing Exclusion
 
 To test exclusion with your own document:
 ```bash
 python main.py --file path/to/your/document.pdf
 ```
+
+When a document is excluded, you'll see a message indicating the document doesn't match the expected invoice format, and no JSON output will be generated for that document.
 
 ## Performance Features
 
