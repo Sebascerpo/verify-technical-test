@@ -1,9 +1,9 @@
 {
-  "vendor_name": "Switch",
+  "vendor_name": "Switch, Ltd.",
   "vendor_address": "PO Box 674592\nDallas, TX 75267-4592",
   "bill_to_name": "Nu Life Health",
   "invoice_number": "16005913",
-  "date": "2023-09-11",
+  "date": "09/11/2023",
   "line_items": [
     {
       "sku": "",
@@ -14,11 +14,11 @@
       "total": -10719890.29
     },
     {
-      "sku": "X6HCHK1C",
+      "sku": "",
       "description": "Transport | 971 Gbps Fiber to wXv21fam",
       "quantity": 3372.59,
       "price": 3868.31,
-      "tax_rate": 17.62,
+      "tax_rate": 0.0,
       "total": 13046223.62
     },
     {
@@ -30,32 +30,32 @@
       "total": 17661826.13
     },
     {
-      "sku": "1OVAXL6A",
+      "sku": "8963157731",
       "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (01/2024|10 Gbps Fiber to dHrINDY",
       "quantity": 1714.46,
       "price": 1186.61,
-      "tax_rate": 17.62,
+      "tax_rate": 0.0,
       "total": 2034395.38
     },
     {
-      "sku": "5HI7G80Q",
+      "sku": "6450580404",
       "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (01/2024 | 10 Gbps Fiber to 14AIFIIqmG",
       "quantity": 3078.56,
       "price": 5076.42,
-      "tax_rate": 17.62,
+      "tax_rate": 0.0,
       "total": 15628063.56
     },
     {
-      "sku": "C2NXECIF",
+      "sku": "9818139719",
       "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (04/2023|10 Gbps Fiber to gGPS1 Ef6",
       "quantity": 6480.38,
       "price": 1340.91,
-      "tax_rate": 17.62,
+      "tax_rate": 0.0,
       "total": 8689606.35
     }
   ],
   "_metadata": {
     "source_file": "synth-switch_v5-7.pdf",
-    "extraction_timestamp": null
+    "extraction_timestamp": "2025-12-15T00:38:55.389806"
   }
 }

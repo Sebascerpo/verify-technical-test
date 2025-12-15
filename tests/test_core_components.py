@@ -7,7 +7,7 @@ Tests cache, circuit breaker, and retry logic.
 import pytest
 import time
 from unittest.mock import Mock, patch
-from src.core.cache import SimpleCache, get_cache, clear_cache
+from src.core.cache import SimpleCache, get_cache
 from src.core.retry import retry, CircuitBreaker
 from src.core.results import Result
 from src.core.exceptions import APIError

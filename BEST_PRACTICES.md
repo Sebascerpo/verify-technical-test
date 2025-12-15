@@ -103,6 +103,23 @@ verify/
 
 6. **Compliance First**: Extraction logic prioritizes OCR text extraction per requirements, with optional enhancements
 
+## Field Extraction Assumptions
+
+This section documents the assumptions made for each extracted field, based on Veryfi API documentation. These assumptions guide the extraction logic and should be considered when modifying extraction code.
+
+**Reference**: [Veryfi Document Data Extraction Fields Explained](https://faq.veryfi.com/en/articles/5571268-document-data-extraction-fields-explained)
+
+### Key Field Assumptions
+
+- **vendor_name**: Extracted from "Please make payments to:" or top of document, includes company suffix (Ltd., Inc., LLC)
+- **date**: MM/DD/YYYY format (USA format) because invoices are from USA companies
+- **line_items_sku**: Numeric only (3-12 digits) in parentheses, based on Veryfi documentation
+- **tax_rate**: Always 0.0 - Switch uses separate "Carrier Taxes" line items for regulatory pass-through fees rather than percentage-based taxes (matches telecommunications industry billing practices)
+- **vendor_address**: Multi-line address following vendor name
+- **invoice_number**: Alphanumeric with hyphens, labeled with "invoice", "inv", or "#"
+
+See `APPROACH.md` for detailed field assumptions with reasoning and Veryfi API references.
+
 ## Code Quality Standards
 
 ### Documentation
@@ -111,6 +128,10 @@ verify/
 - All functions and classes have comprehensive docstrings
 - Docstrings follow Google/NumPy style
 - Include parameter descriptions, return values, and exceptions
+- **Field Assumptions**: Extraction methods include field assumption documentation with:
+  - Assumption made
+  - Reasoning (based on Veryfi docs or invoice format)
+  - Reference to Veryfi API documentation
 
 **Example**:
 ```python

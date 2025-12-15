@@ -160,6 +160,52 @@ The system extracts all required fields **from the `ocr_text` field** as specifi
 
 **Hybrid Strategy**: When available, the system uses Veryfi's structured data fields to enhance OCR text extraction results, improving accuracy while maintaining full compliance with the requirement to extract from `ocr_text`.
 
+## Field Extraction Assumptions
+
+This section documents the assumptions made for each extracted field, based on Veryfi API documentation and invoice format analysis. Reference: [Veryfi Document Data Extraction Fields Explained](https://faq.veryfi.com/en/articles/5571268-document-data-extraction-fields-explained)
+
+### vendor_name
+- **Assumption**: Extracted from "Please make payments to:" section or top of document, includes company suffix (Ltd., Inc., LLC, Corp.)
+- **Reason**: Veryfi API extracts vendor information at document level (`vendor.name` field)
+- **Format**: Company name with optional legal suffix, cleaned and normalized
+- **Reference**: Veryfi documentation indicates vendor information is at document level
+
+### vendor_address
+- **Assumption**: Multi-line address (2-4 lines) following vendor name, containing street number, street name, city, state, and ZIP code
+- **Reason**: Veryfi API extracts vendor address as structured data (`vendor.address` field)
+- **Format**: Multi-line string with newlines separating address components
+- **Reference**: Veryfi documentation: vendor.address field contains vendor address information
+
+### bill_to_name
+- **Assumption**: Company name in "Bill To:", "Sold To:", or "Customer:" labeled sections
+- **Reason**: Veryfi API extracts bill-to information (`bill_to.name` field)
+- **Format**: Company name string
+- **Reference**: Veryfi documentation: bill_to.name field contains bill-to customer information
+
+### invoice_number
+- **Assumption**: Alphanumeric with hyphens, labeled with "invoice", "inv", or "#"
+- **Reason**: Common invoice number formats in USA invoices
+- **Format**: Alphanumeric string (e.g., "INV-12345", "16005913")
+- **Reference**: Veryfi documentation: invoice_number field contains invoice identifier
+
+### date
+- **Assumption**: MM/DD/YYYY format (USA format) because invoices are from USA companies
+- **Reason**: Veryfi API extracts date as "document issue/transaction date", invoices are from USA
+- **Format**: MM/DD/YYYY (converted from various input formats)
+- **Reference**: Veryfi documentation: date field contains document issue/transaction date
+
+### line_items (SKU)
+- **Assumption**: SKU is numeric only (3-12 digits) in parentheses within description
+- **Reason**: Based on Veryfi documentation for `line_items_sku` field - "Stock Keeping Unit, a unique number associated with a product"
+- **Format**: Numeric codes in parentheses, e.g., "(12345)", "(67890)"
+- **Reference**: Veryfi documentation: line_items_sku field contains product SKU
+
+### line_items (tax_rate)
+- **Assumption**: Tax rate is always 0.0 for all line items
+- **Reason**: After analyzing the invoice structure, Switch uses separate "Carrier Taxes" line items for regulatory pass-through fees rather than applying percentage-based taxes to services. Taxes are represented by dedicated line items rather than rates applied to services. This matches standard telecommunications industry billing practices.
+- **Format**: Always 0.0
+- **Reference**: Veryfi documentation: tax field contains invoice-level tax amount, but in this case taxes are represented as separate line items
+
 ## Documentation
 
 - **APPROACH.md**: Detailed explanation of the extraction approach, assumptions, and strategies

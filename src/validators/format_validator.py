@@ -5,7 +5,7 @@ Validates that documents match the expected invoice format.
 """
 
 import re
-from typing import Optional
+from typing import Optional, Any
 from ..config.settings import get_settings
 from ..config.patterns import get_patterns
 from ..core.logging_config import get_logger
@@ -26,7 +26,7 @@ class FormatValidator(IValidator):
         self.settings = get_settings()
         self.patterns = get_patterns()
     
-    def validate(self, data: any) -> bool:
+    def validate(self, data: Any) -> bool:
         """
         Validate invoice format.
         

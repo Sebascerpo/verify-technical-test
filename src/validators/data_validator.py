@@ -31,6 +31,26 @@ class DataValidator(IValidator):
         if not isinstance(data, dict):
             return False
         
+        # Validate required top-level fields
+        if not self._validate_required_fields(data):
+            return False
+        
+        # Validate line items structure
+        if not self._validate_line_items(data.get('line_items', [])):
+            return False
+        
+        return True
+    
+    def _validate_required_fields(self, data: Dict[str, Any]) -> bool:
+        """
+        Validate that all required top-level fields are present.
+        
+        Args:
+            data: Invoice data dictionary
+            
+        Returns:
+            True if all required fields present, False otherwise
+        """
         required_fields = [
             'vendor_name', 'vendor_address', 'bill_to_name',
             'invoice_number', 'date', 'line_items'
@@ -41,8 +61,19 @@ class DataValidator(IValidator):
                 logger.warning(f"Missing required field: {field}")
                 return False
         
-        # Validate line items structure
-        if not isinstance(data['line_items'], list):
+        return True
+    
+    def _validate_line_items(self, line_items: List[Dict[str, Any]]) -> bool:
+        """
+        Validate line items structure.
+        
+        Args:
+            line_items: List of line item dictionaries
+            
+        Returns:
+            True if line items are valid, False otherwise
+        """
+        if not isinstance(line_items, list):
             logger.warning("line_items must be a list")
             return False
         
@@ -51,7 +82,7 @@ class DataValidator(IValidator):
             'price', 'tax_rate', 'total'
         ]
         
-        for i, item in enumerate(data['line_items']):
+        for i, item in enumerate(line_items):
             if not isinstance(item, dict):
                 logger.warning(f"Line item {i} is not a dictionary")
                 return False
@@ -60,33 +91,6 @@ class DataValidator(IValidator):
                 if field not in item:
                     logger.warning(f"Line item {i} missing field: {field}")
                     return False
-        
-        return True
-    
-    def validate_line_item(self, item: Dict[str, Any]) -> bool:
-        """
-        Validate a single line item.
-        
-        Args:
-            item: Line item dictionary
-            
-        Returns:
-            True if valid, False otherwise
-        """
-        required_fields = ['sku', 'description', 'quantity', 'price', 'tax_rate', 'total']
-        
-        for field in required_fields:
-            if field not in item:
-                return False
-        
-        # Validate types
-        try:
-            float(item['quantity'])
-            float(item['price'])
-            float(item['tax_rate'])
-            float(item['total'])
-        except (ValueError, TypeError):
-            return False
         
         return True
 

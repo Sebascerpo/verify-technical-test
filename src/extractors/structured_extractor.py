@@ -48,7 +48,26 @@ class StructuredExtractor(BaseExtractor):
         }
     
     def extract_vendor_name(self, response: Dict[str, Any]) -> Optional[str]:
-        """Extract vendor name from structured response."""
+        """
+        Extract vendor name from Veryfi API structured response.
+        
+        **Field Assumption**: Vendor name is in response['vendor']['name']['value'] or
+        response['vendor']['name'], and includes company suffix (Ltd., Inc., LLC).
+        
+        **Reasoning**:
+        - Veryfi API extracts vendor information at document level
+        - Vendor name field contains company name with legal suffix
+        - Reference: https://faq.veryfi.com/en/articles/5571268-document-data-extraction-fields-explained
+        - Veryfi documentation: vendor.name field contains vendor information
+        
+        **Cleaning**: Applied via `_clean_vendor_name()` to normalize and preserve suffixes.
+        
+        Args:
+            response: Veryfi API response dictionary
+            
+        Returns:
+            Extracted and cleaned vendor name, or None if not found
+        """
         vendor_name = VeryfiClient.extract_structured_field(
             response,
             ['vendor', 'name', 'value'],
@@ -60,7 +79,10 @@ class StructuredExtractor(BaseExtractor):
         )
         
         if vendor_name:
-            return str(vendor_name).strip()
+            vendor_name_str = str(vendor_name).strip()
+            # Clean and normalize the vendor name
+            cleaned = self._clean_vendor_name(vendor_name_str)
+            return cleaned if cleaned else vendor_name_str
         return None
     
     def extract_vendor_address(self, response: Dict[str, Any]) -> Optional[str]:
@@ -106,7 +128,28 @@ class StructuredExtractor(BaseExtractor):
         return None
     
     def extract_date(self, response: Dict[str, Any]) -> Optional[str]:
-        """Extract date from structured response and format to YYYY-MM-DD."""
+        """
+        Extract date from structured response and format to MM/DD/YYYY (USA format).
+        
+        **Field Assumption**: Date is in MM/DD/YYYY format (USA format) because
+        invoices are from USA companies.
+        
+        **Reasoning**:
+        - Veryfi API extracts date as "document issue/transaction date"
+        - Invoices are from USA companies, so dates follow USA format
+        - Veryfi may return dates in YYYY-MM-DD format, which we convert to MM/DD/YYYY
+        - Reference: https://faq.veryfi.com/en/articles/5571268-document-data-extraction-fields-explained
+        
+        **Format Conversion**:
+        - Input: YYYY-MM-DD (from Veryfi) or other formats
+        - Output: MM/DD/YYYY (USA format)
+        
+        Args:
+            response: Veryfi API response dictionary
+            
+        Returns:
+            Date string in MM/DD/YYYY format, or None if not found
+        """
         date_value = VeryfiClient.extract_structured_field(
             response,
             ['date'],
@@ -120,10 +163,11 @@ class StructuredExtractor(BaseExtractor):
         
         date_str = str(date_value).strip()
         
-        # Extract just the date part (YYYY-MM-DD)
-        date_match = re.search(r'(\d{4}-\d{2}-\d{2})', date_str)
+        # If already in YYYY-MM-DD format, convert to MM/DD/YYYY
+        date_match = re.search(r'(\d{4})-(\d{2})-(\d{2})', date_str)
         if date_match:
-            return date_match.group(1)
+            year, month, day = date_match.groups()
+            return f"{month}/{day}/{year}"  # Convert to MM/DD/YYYY
         
         # Try to parse other formats
         parsed_date = self._parse_date(date_str)

@@ -80,10 +80,3 @@ def get_cache() -> SimpleCache:
         _cache = SimpleCache()
     return _cache
 
-
-def clear_cache():
-    """Clear the global cache."""
-    global _cache
-    if _cache:
-        _cache.clear()
-

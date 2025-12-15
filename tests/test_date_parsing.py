@@ -19,7 +19,7 @@ class TestDateParsing:
         Invoice Date: 01/15/2024
         """
         date = self.extractor.extract_date(ocr_text)
-        assert date == "2024-01-15"
+        assert date == "01/15/2024"  # USA format: MM/DD/YYYY
     
     def test_extract_date_dd_mm_yyyy(self):
         """Test extraction of DD/MM/YYYY format."""
@@ -27,10 +27,11 @@ class TestDateParsing:
         Date: 15/01/2024
         """
         date = self.extractor.extract_date(ocr_text)
-        # Should parse to a valid date format
+        # Should parse to USA format (MM/DD/YYYY)
         assert date is not None
-        assert len(date) == 10  # YYYY-MM-DD format
-        assert date.count('-') == 2
+        assert len(date) == 10  # MM/DD/YYYY format
+        assert date.count('/') == 2
+        assert date == "01/15/2024"  # Parsed as MM/DD/YYYY
     
     def test_extract_date_yyyy_mm_dd(self):
         """Test extraction of YYYY/MM/DD format."""
@@ -38,7 +39,7 @@ class TestDateParsing:
         Date: 2024/01/15
         """
         date = self.extractor.extract_date(ocr_text)
-        assert date == "2024-01-15"
+        assert date == "01/15/2024"  # Converted to USA format: MM/DD/YYYY
     
     def test_extract_date_text_format(self):
         """Test extraction of text date format."""
@@ -47,7 +48,7 @@ class TestDateParsing:
         """
         date = self.extractor.extract_date(ocr_text)
         assert date is not None
-        assert "2024" in date
+        assert date == "01/15/2024"  # USA format: MM/DD/YYYY
     
     def test_extract_date_with_label(self):
         """Test extraction with 'date' label."""
@@ -57,7 +58,7 @@ class TestDateParsing:
         """
         date = self.extractor.extract_date(ocr_text)
         assert date is not None
-        assert "2024" in date
+        assert date == "03/20/2024"  # USA format: MM/DD/YYYY
     
     def test_extract_date_not_found(self):
         """Test handling when date is not found."""

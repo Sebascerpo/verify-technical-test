@@ -1,0 +1,69 @@
+{
+  "vendor_name": "Switch, Ltd.",
+  "vendor_address": "PO Box 674592\nDallas, TX 75267-4592",
+  "bill_to_name": "Toni Hackel",
+  "invoice_number": "1556267",
+  "date": "09/22/2023",
+  "line_items": [
+    {
+      "sku": "4419693704",
+      "description": "Transport | Switch Fiber Pair (Intra-campus) | Pairs (04/2023 | 10 Gbps Fiber to HOEpyb",
+      "quantity": 2912.98,
+      "price": 934.09,
+      "tax_rate": 0.0,
+      "total": 2720985.49
+    },
+    {
+      "sku": "",
+      "description": "Carrier Taxes for Transport | 230 Gbps Wavelength Diverse between Sparks, OR 56789 and Plano, NV 98765 (07/2023 Taxes)",
+      "quantity": 3500.87,
+      "price": 6229.33,
+      "tax_rate": 0.0,
+      "total": 21808074.52
+    },
+    {
+      "sku": "",
+      "description": "Special Partnership Discount",
+      "quantity": 8.0,
+      "price": -561.0,
+      "tax_rate": 0.0,
+      "total": -4488.0
+    },
+    {
+      "sku": "",
+      "description": "Item Discount: Special Partnership Discount",
+      "quantity": 8.0,
+      "price": -296.0,
+      "tax_rate": 0.0,
+      "total": -2368.0
+    },
+    {
+      "sku": "",
+      "description": "Transport | 82 Gbps Fiber to YDDTJOrnuW",
+      "quantity": 5607.34,
+      "price": 656.07,
+      "tax_rate": 0.0,
+      "total": 3678807.55
+    },
+    {
+      "sku": "",
+      "description": "Carrier Taxes for Transport | 45 Gbps Wavelength Diverse between Hillsboro, NV 98765 and Portland, TX 56789 (05/2023 Taxes)",
+      "quantity": 3949.46,
+      "price": 7128.95,
+      "tax_rate": 0.0,
+      "total": 28155502.87
+    },
+    {
+      "sku": "",
+      "description": "Transport | 97 Gbps Fiber to 3XMOyFdB",
+      "quantity": 942.71,
+      "price": 1918.01,
+      "tax_rate": 0.0,
+      "total": 1808127.21
+    }
+  ],
+  "_metadata": {
+    "source_file": "synth-switch_v5-4.pdf",
+    "extraction_timestamp": "2025-12-15T00:38:55.392593"
+  }
+}

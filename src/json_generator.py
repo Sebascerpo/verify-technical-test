@@ -6,6 +6,7 @@ Converts extracted invoice data into properly formatted JSON output.
 
 import json
 import logging
+from datetime import datetime
 from typing import Dict, Any, List
 from pathlib import Path
 
@@ -84,7 +85,7 @@ class JSONGenerator:
         if filename:
             json_output['_metadata'] = {
                 'source_file': filename,
-                'extraction_timestamp': None  # Could add timestamp if needed
+                'extraction_timestamp': datetime.now().isoformat()
             }
         
         return json_output
@@ -168,7 +169,7 @@ class JSONGenerator:
             'invoices': all_invoice_data,
             'total_invoices': len(all_invoice_data),
             'metadata': {
-                'generated_at': None,  # Could add timestamp
+                'generated_at': datetime.now().isoformat(),
                 'version': '1.0'
             }
         }

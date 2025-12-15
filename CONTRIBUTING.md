@@ -116,10 +116,27 @@ This should result in the document being excluded (no JSON output generated).
 3. No extraction or JSON generation occurs for excluded documents
 4. Excluded documents are tracked separately in batch processing
 
+## Field Extraction Assumptions
+
+When working with extraction code, be aware of the field assumptions documented in `APPROACH.md` and `README.md`. These assumptions are based on:
+
+- Veryfi API documentation: [Document Data Extraction Fields Explained](https://faq.veryfi.com/en/articles/5571268-document-data-extraction-fields-explained)
+- Invoice format analysis (USA invoices)
+- Veryfi API field structures
+
+**Key Assumptions**:
+- **Date format**: MM/DD/YYYY (USA format) - invoices are from USA companies
+- **SKU format**: Numeric only (3-12 digits) in parentheses - based on Veryfi docs
+- **Tax rate**: Always 0.0 - Switch uses separate "Carrier Taxes" line items for regulatory pass-through fees rather than percentage-based taxes (matches telecommunications industry billing practices)
+- **Vendor name**: Includes company suffix, extracted from payment instructions
+
+When modifying extraction logic, ensure changes align with documented assumptions or update the documentation if assumptions change.
+
 ## Code Style
 
 - Follow PEP 8
 - Use type hints
 - Add docstrings to all functions
 - Keep functions focused and reasonably sized
+- Document field assumptions in extraction method docstrings
 

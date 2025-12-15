@@ -20,8 +20,3 @@ class APIError(InvoiceProcessingError):
         self.status_code = status_code
         self.response = response
 
-
-class FileNotFoundError(InvoiceProcessingError):
-    """Raised when a required file is not found."""
-    pass
-
