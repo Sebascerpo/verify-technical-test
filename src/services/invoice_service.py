@@ -7,14 +7,16 @@ Orchestrates invoice processing business logic.
 from typing import Dict, Optional, Any
 from pathlib import Path
 from ..extractors.hybrid_extractor import HybridExtractor
+from ..extractors.ocr_extractor import OCRExtractor
 from ..validators.format_validator import FormatValidator
 from ..validators.data_validator import DataValidator
 from ..json_generator import JSONGenerator
 from ..core.logging_config import get_logger
-from ..core.metrics import get_metrics, Timer
 from ..core.results import Result
+from ..config.settings import get_settings
 
 logger = get_logger(__name__)
+settings = get_settings()
 
 
 class InvoiceService:
@@ -40,16 +42,16 @@ class InvoiceService:
             data_validator: Optional data validator (creates default if None)
             json_generator: Optional JSON generator (creates default if None)
         """
-        from ..extractors.hybrid_extractor import HybridExtractor
-        from ..validators.format_validator import FormatValidator
-        from ..validators.data_validator import DataValidator
-        from ..json_generator import JSONGenerator
+        # Use hybrid extraction if enabled, otherwise OCR only
+        if settings.use_hybrid_extraction:
+            self.extractor = extractor or HybridExtractor()
+        else:
+            self.extractor = extractor or OCRExtractor()
+            logger.info("Using OCR-only extraction (hybrid disabled)")
         
-        self.extractor = extractor or HybridExtractor()
         self.format_validator = format_validator or FormatValidator()
         self.data_validator = data_validator or DataValidator()
         self.json_generator = json_generator or JSONGenerator()
-        self.metrics = get_metrics()
     
     def process_invoice(
         self,
@@ -69,18 +71,16 @@ class InvoiceService:
             Result object with extracted invoice data
         """
         try:
-            with Timer("invoice_extraction", self.metrics):
-                # Get OCR text if not provided
-                if ocr_text is None and response:
-                    ocr_text = response.get('ocr_text', '')
-                
-                # Validate format if we have OCR text
-                if ocr_text:
-                    if not self.format_validator.is_valid_invoice_format(ocr_text):
-                        self.metrics.record_error("invoice_processing", "invalid_format")
-                        return Result.failure_result(
-                            f"Document does not match expected invoice format"
-                        )
+            # Get OCR text if not provided
+            if ocr_text is None and response:
+                ocr_text = response.get('ocr_text', '')
+            
+            # Validate format if we have OCR text
+            if ocr_text:
+                if not self.format_validator.is_valid_invoice_format(ocr_text):
+                    return Result.failure_result(
+                        f"Document does not match expected invoice format"
+                    )
                 
                 # Extract data
                 invoice_data = self.extractor.extract_all_fields(
@@ -99,12 +99,10 @@ class InvoiceService:
                     logger.warning("Generated JSON does not match expected structure")
                     # Still return data, but log warning
                 
-                self.metrics.increment("invoices_processed")
                 return Result.success_result(json_data)
                 
         except Exception as e:
             logger.error(f"Error processing invoice: {str(e)}", exc_info=True)
-            self.metrics.record_error("invoice_processing", type(e).__name__)
             return Result.failure_result(f"Failed to process invoice: {str(e)}")
     
     def save_invoice(
@@ -123,12 +121,9 @@ class InvoiceService:
             Result indicating success or failure
         """
         try:
-            with Timer("invoice_save", self.metrics):
-                self.json_generator.save_json(invoice_data, output_path)
-                self.metrics.increment("invoices_saved")
-                return Result.success_result(True)
+            self.json_generator.save_json(invoice_data, output_path)
+            return Result.success_result(True)
         except Exception as e:
             logger.error(f"Error saving invoice: {str(e)}", exc_info=True)
-            self.metrics.record_error("invoice_save", type(e).__name__)
             return Result.failure_result(f"Failed to save invoice: {str(e)}")
 

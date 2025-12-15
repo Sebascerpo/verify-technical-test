@@ -5,8 +5,9 @@ Integration tests for end-to-end invoice processing.
 import pytest
 import json
 from pathlib import Path
-from src.document_processor import DocumentProcessor
-from src.invoice_extractor import InvoiceExtractor
+from src.processors import DocumentProcessor
+from src.extractors.hybrid_extractor import HybridExtractor
+from src.validators.format_validator import FormatValidator
 from src.json_generator import JSONGenerator
 
 
@@ -15,7 +16,8 @@ class TestIntegration:
     
     def setup_method(self):
         """Set up test fixtures."""
-        self.extractor = InvoiceExtractor()
+        self.extractor = HybridExtractor()
+        self.format_validator = FormatValidator()
         self.json_gen = JSONGenerator()
     
     def test_format_validation_valid_invoice(self):
@@ -36,7 +38,7 @@ class TestIntegration:
         Tax: $4.00
         Total: $54.00
         """
-        is_valid = self.extractor.is_valid_invoice_format(ocr_text)
+        is_valid = self.format_validator.validate(ocr_text)
         assert is_valid is True
     
     def test_format_validation_invalid_document(self):
@@ -45,9 +47,9 @@ class TestIntegration:
         This is just some random text
         without invoice information
         """
-        is_valid = self.extractor.extract_all_fields(ocr_text)
+        result = self.extractor.extract_all_fields(ocr_text=ocr_text)
         # Should handle gracefully
-        assert isinstance(is_valid, dict)
+        assert isinstance(result, dict)
     
     def test_complete_extraction_pipeline(self):
         """Test complete extraction pipeline."""
@@ -130,18 +132,18 @@ class TestIntegration:
         Tax: $10.00
         Total: $100.00
         """
-        assert self.extractor.is_valid_invoice_format(valid_ocr) is True
+        assert self.format_validator.validate(valid_ocr) is True
         
         # Invalid document (missing key indicators)
         invalid_ocr = """
         Just some random text
         without invoice keywords
         """
-        assert self.extractor.is_valid_invoice_format(invalid_ocr) is False
+        assert self.format_validator.validate(invalid_ocr) is False
         
         # Invalid document (too short)
         short_ocr = "Hi"
-        assert self.extractor.is_valid_invoice_format(short_ocr) is False
+        assert self.format_validator.validate(short_ocr) is False
     
     def test_exclusion_non_supported_invoice(self):
         """Test exclusion of non-supported invoice format.
@@ -159,7 +161,7 @@ class TestIntegration:
         """
         
         # Should be excluded (doesn't match invoice format)
-        is_valid = self.extractor.is_valid_invoice_format(non_invoice_ocr)
+        is_valid = self.format_validator.validate(non_invoice_ocr)
         assert is_valid is False, "Non-invoice document should be excluded"
         
         # Test with document that has some keywords but not enough
@@ -167,7 +169,7 @@ class TestIntegration:
         Some text with the word invoice
         but no dates or totals
         """
-        is_valid_partial = self.extractor.is_valid_invoice_format(partial_ocr)
+        is_valid_partial = self.format_validator.validate(partial_ocr)
         assert is_valid_partial is False, "Partial invoice document should be excluded"
     
     def test_exclusion_with_actual_document_structure(self):
@@ -185,7 +187,7 @@ class TestIntegration:
         Please fill out and return.
         """
         
-        is_valid = self.extractor.is_valid_invoice_format(form_ocr)
+        is_valid = self.format_validator.validate(form_ocr)
         # Should be excluded - missing required keywords (invoice, total) and price patterns
         # The validation requires at least 2 of: invoice, total, date AND at least one price pattern
         # This form has none of these, so should be excluded

@@ -4,8 +4,7 @@ Caching utilities.
 Provides caching for expensive operations like regex compilation and API responses.
 """
 
-from typing import Dict, Any, Optional, Callable
-from functools import wraps
+from typing import Dict, Any, Optional
 import time
 from ..config.settings import get_settings
 
@@ -87,40 +86,4 @@ def clear_cache():
     global _cache
     if _cache:
         _cache.clear()
-
-
-def cached(key_func: Optional[Callable] = None, ttl: Optional[int] = None):
-    """
-    Decorator for caching function results.
-    
-    Args:
-        key_func: Function to generate cache key from arguments
-        ttl: Time to live in seconds
-    """
-    def decorator(func: Callable) -> Callable:
-        cache = SimpleCache(ttl=ttl)
-        
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            # Generate cache key
-            if key_func:
-                cache_key = key_func(*args, **kwargs)
-            else:
-                cache_key = f"{func.__name__}:{str(args)}:{str(kwargs)}"
-            
-            # Check cache
-            cached_value = cache.get(cache_key)
-            if cached_value is not None:
-                return cached_value
-            
-            # Execute function
-            result = func(*args, **kwargs)
-            
-            # Cache result
-            cache.set(cache_key, result)
-            
-            return result
-        
-        return wrapper
-    return decorator
 

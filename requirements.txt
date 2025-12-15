@@ -1,7 +1,5 @@
 veryfi>=0.1.8
-pandas>=2.0.0
 pytest>=7.4.0
 pytest-cov>=4.1.0
 python-dotenv>=1.0.0
-regex>=2023.10.3
 

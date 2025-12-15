@@ -31,7 +31,7 @@ def process_single_file(file_path: str, output_dir: str = "output") -> bool:
         True if processing succeeded, False otherwise
     """
     try:
-        # Initialize service
+        # Create processing service
         processing_service = ProcessingService()
         
         # Process file
@@ -57,17 +57,11 @@ def process_all_invoices(invoices_dir: str = "invoices", output_dir: str = "outp
         output_dir: Directory to save JSON output files
     """
     try:
-        # Initialize service
+        # Create processing service
         processing_service = ProcessingService()
         
         # Process all invoices
         summary = processing_service.process_all_invoices(invoices_dir, output_dir)
-        
-        # Log metrics summary
-        from src.core.metrics import get_metrics
-        metrics = get_metrics()
-        metrics_summary = metrics.get_summary()
-        logger.info(f"Metrics summary: {metrics_summary}")
         
     except Exception as e:
         logger.error(f"Error in batch processing: {str(e)}", exc_info=True)

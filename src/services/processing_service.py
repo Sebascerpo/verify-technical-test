@@ -10,7 +10,6 @@ from ..processors.document_processor import DocumentProcessor
 from ..services.invoice_service import InvoiceService
 from ..json_generator import JSONGenerator
 from ..core.logging_config import get_logger
-from ..core.metrics import get_metrics, Timer
 from ..core.results import Result
 
 logger = get_logger(__name__)
@@ -37,14 +36,9 @@ class ProcessingService:
             invoice_service: Optional invoice service (creates default if None)
             json_generator: Optional JSON generator (creates default if None)
         """
-        from ..processors.document_processor import DocumentProcessor
-        from ..services.invoice_service import InvoiceService
-        from ..json_generator import JSONGenerator
-        
         self.processor = processor
         self.invoice_service = invoice_service or InvoiceService()
         self.json_generator = json_generator or JSONGenerator()
-        self.metrics = get_metrics()
     
     def process_single_file(
         self,
@@ -62,50 +56,46 @@ class ProcessingService:
             Result indicating success or failure
         """
         try:
-            with Timer("single_file_processing", self.metrics):
-                if not self.processor:
-                    from ..processors import DocumentProcessor
-                    self.processor = DocumentProcessor()
-                
-                # Process document
-                result = self.processor.process_document_by_path(file_path)
-                
-                if not result:
-                    self.metrics.record_error("file_processing", "processing_failed")
-                    return Result.failure_result(f"Failed to process {file_path}")
-                
-                response = result.get('response')
-                ocr_text = result.get('ocr_text', '')
-                filename = result['filename']
-                
-                # Process invoice
-                invoice_result = self.invoice_service.process_invoice(
-                    response=response,
-                    ocr_text=ocr_text,
-                    filename=filename
-                )
-                
-                if invoice_result.is_failure():
-                    return invoice_result
-                
-                invoice_data = invoice_result.get_value()
-                
-                # Save JSON
-                output_path = Path(output_dir) / f"{Path(filename).stem}.json"
-                save_result = self.invoice_service.save_invoice(
-                    invoice_data,
-                    str(output_path)
-                )
-                
-                if save_result.is_failure():
-                    return save_result
-                
-                logger.info(f"Successfully processed {filename}")
-                return Result.success_result(True)
+            if not self.processor:
+                self.processor = DocumentProcessor()
+            
+            # Process document
+            result = self.processor.process_document_by_path(file_path)
+            
+            if not result:
+                return Result.failure_result(f"Failed to process {file_path}")
+            
+            response = result.get('response')
+            ocr_text = result.get('ocr_text', '')
+            filename = result['filename']
+            
+            # Process invoice
+            invoice_result = self.invoice_service.process_invoice(
+                response=response,
+                ocr_text=ocr_text,
+                filename=filename
+            )
+            
+            if invoice_result.is_failure():
+                return invoice_result
+            
+            invoice_data = invoice_result.get_value()
+            
+            # Save JSON
+            output_path = Path(output_dir) / f"{Path(filename).stem}.json"
+            save_result = self.invoice_service.save_invoice(
+                invoice_data,
+                str(output_path)
+            )
+            
+            if save_result.is_failure():
+                return save_result
+            
+            logger.info(f"Successfully processed {filename}")
+            return Result.success_result(True)
                 
         except Exception as e:
             logger.error(f"Error processing file {file_path}: {str(e)}", exc_info=True)
-            self.metrics.record_error("file_processing", type(e).__name__)
             return Result.failure_result(f"Error processing {file_path}: {str(e)}")
     
     def process_all_invoices(
@@ -124,10 +114,8 @@ class ProcessingService:
             Dictionary with processing summary
         """
         try:
-            with Timer("batch_processing", self.metrics):
-                if not self.processor:
-                    from ..processors import DocumentProcessor
-                    self.processor = DocumentProcessor(invoices_dir)
+            if not self.processor:
+                self.processor = DocumentProcessor(invoices_dir)
                 
                 # Process all documents
                 logger.info(f"Processing all invoices from {invoices_dir}")
@@ -219,6 +207,5 @@ class ProcessingService:
                 
         except Exception as e:
             logger.error(f"Error in batch processing: {str(e)}", exc_info=True)
-            self.metrics.record_error("batch_processing", type(e).__name__)
             raise
 

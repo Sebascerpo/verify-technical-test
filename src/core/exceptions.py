@@ -12,26 +12,6 @@ class InvoiceProcessingError(Exception):
     pass
 
 
-class ExtractionError(InvoiceProcessingError):
-    """Raised when data extraction fails."""
-    pass
-
-
-class ValidationError(InvoiceProcessingError):
-    """Raised when validation fails."""
-    pass
-
-
-class ProcessingError(InvoiceProcessingError):
-    """Raised when document processing fails."""
-    pass
-
-
-class ConfigurationError(InvoiceProcessingError):
-    """Raised when configuration is invalid or missing."""
-    pass
-
-
 class APIError(InvoiceProcessingError):
     """Raised when API calls fail."""
     
@@ -43,10 +23,5 @@ class APIError(InvoiceProcessingError):
 
 class FileNotFoundError(InvoiceProcessingError):
     """Raised when a required file is not found."""
-    pass
-
-
-class FormatError(ValidationError):
-    """Raised when document format is invalid."""
     pass
 

@@ -7,7 +7,7 @@ compliance with the technical test requirements.
 """
 
 import pytest
-from src.invoice_extractor import InvoiceExtractor
+from src.extractors.ocr_extractor import OCRExtractor
 from src.json_generator import JSONGenerator
 
 
@@ -16,7 +16,7 @@ class TestOCROnlyExtraction:
     
     def setup_method(self):
         """Set up test fixtures."""
-        self.extractor = InvoiceExtractor()
+        self.extractor = OCRExtractor()
         self.json_gen = JSONGenerator()
     
     def test_extract_all_fields_from_ocr_only(self):
@@ -58,21 +58,27 @@ class TestOCROnlyExtraction:
         ocr_text = """
         SWITCH TECHNOLOGIES LLC
         789 Tech Boulevard
+        Invoice #: INV-001
+        Date: 01/15/2024
+        Total: $100.00
         """
-        vendor_name = self.extractor.extract_vendor_name_enhanced(ocr_text)
+        result = self.extractor.extract_all_fields(ocr_text=ocr_text)
+        vendor_name = result.get('vendor_name')
         assert vendor_name is not None
-        assert 'SWITCH' in vendor_name or 'TECHNOLOGIES' in vendor_name
+        assert 'SWITCH' in vendor_name.upper() or 'TECHNOLOGIES' in vendor_name.upper()
     
     def test_extract_invoice_number_from_ocr_only(self):
         """Test invoice number extraction from OCR text only."""
         ocr_text = """
+        ACME CORPORATION
         Invoice Number: INV-12345
         Date: 09/06/2024
+        Total: $100.00
         """
-        invoice_number = self.extractor.extract_invoice_number(ocr_text)
+        result = self.extractor.extract_all_fields(ocr_text=ocr_text)
+        invoice_number = result.get('invoice_number', '')
         # Should extract invoice number (may have variations in extraction)
-        # The extraction may not be perfect, but should attempt to extract
-        assert invoice_number is not None or invoice_number == ''
+        assert invoice_number is not None
         # If extracted, should have reasonable length
         if invoice_number and len(invoice_number) > 0:
             assert len(invoice_number) >= 1  # At least some value extracted
@@ -80,9 +86,12 @@ class TestOCROnlyExtraction:
     def test_extract_date_from_ocr_only(self):
         """Test date extraction from OCR text only."""
         ocr_text = """
+        ACME CORPORATION
         Invoice Date: 09/06/2024
+        Total: $100.00
         """
-        date = self.extractor.extract_date(ocr_text)
+        result = self.extractor.extract_all_fields(ocr_text=ocr_text)
+        date = result.get('date')
         assert date is not None
         assert '2024' in date
         assert len(date) == 10  # YYYY-MM-DD format
@@ -90,11 +99,16 @@ class TestOCROnlyExtraction:
     def test_extract_line_items_from_ocr_only(self):
         """Test line items extraction from OCR text only."""
         ocr_text = """
+        ACME CORPORATION
+        Invoice #: INV-001
+        Date: 01/15/2024
         Description Qty Price Total
         Installation Service 579.10 $1,750.30 $1,013,598.73
         Transport Service 5,519.81 $5,201.91 $28,713,554.84
+        Total: $29,727,153.57
         """
-        line_items = self.extractor.extract_line_items(ocr_text)
+        result = self.extractor.extract_all_fields(ocr_text=ocr_text)
+        line_items = result.get('line_items', [])
         assert len(line_items) >= 1
         if line_items:
             assert 'description' in line_items[0]

@@ -3,7 +3,7 @@ Unit tests for date extraction and parsing.
 """
 
 import pytest
-from src.invoice_extractor import InvoiceExtractor
+from src.extractors.ocr_extractor import OCRExtractor
 
 
 class TestDateParsing:
@@ -11,7 +11,7 @@ class TestDateParsing:
     
     def setup_method(self):
         """Set up test fixtures."""
-        self.extractor = InvoiceExtractor()
+        self.extractor = OCRExtractor()
     
     def test_extract_date_mm_dd_yyyy(self):
         """Test extraction of MM/DD/YYYY format."""

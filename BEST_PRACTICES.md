@@ -28,36 +28,80 @@ While the requirement specifies extraction from `ocr_text`, the implementation u
 
 ## Code Organization and Structure
 
-### Project Structure
+### Project Structure (Scalable Architecture)
 
 ```
 verify/
-├── src/                    # Source code modules
-│   ├── __init__.py
-│   ├── veryfi_client.py   # API integration
-│   ├── document_processor.py  # File processing
-│   ├── invoice_extractor.py   # Data extraction
-│   └── json_generator.py      # JSON output
-├── tests/                  # Test suite
-│   ├── __init__.py
+├── src/
+│   ├── core/              # Core infrastructure
+│   │   ├── cache.py       # API response caching (cost reduction)
+│   │   ├── exceptions.py  # Custom exception hierarchy
+│   │   ├── interfaces.py # Protocol definitions
+│   │   ├── logging_config.py # Centralized logging
+│   │   ├── results.py     # Result objects (functional error handling)
+│   │   └── retry.py       # Retry logic & circuit breaker
+│   ├── config/            # Configuration management
+│   │   ├── patterns.py    # Pre-compiled regex patterns
+│   │   └── settings.py    # Centralized settings
+│   ├── clients/           # API clients
+│   │   └── veryfi_client.py # Veryfi OCR API with caching & circuit breaker
+│   ├── processors/        # Document processing
+│   │   └── document_processor.py # PDF batch processing
+│   ├── extractors/        # Modular extraction (SRP)
+│   │   ├── base.py        # Base extractor class
+│   │   ├── ocr_extractor.py # OCR text extraction
+│   │   ├── structured_extractor.py # Structured data extraction
+│   │   ├── line_item_extractor.py # Line items extraction
+│   │   └── hybrid_extractor.py # Hybrid strategy orchestrator
+│   ├── validators/        # Validation logic
+│   │   ├── format_validator.py # Invoice format validation
+│   │   └── data_validator.py # Data structure validation
+│   ├── services/          # Business logic orchestration
+│   │   ├── invoice_service.py # Invoice processing service
+│   │   └── processing_service.py # Batch processing service
+│   └── json_generator.py # JSON output generation
+├── tests/                 # Comprehensive test suite
 │   ├── test_vendor_extraction.py
 │   ├── test_line_item_extraction.py
-│   ├── test_date_parsing.py
-│   ├── test_price_extraction.py
+│   ├── test_structured_extraction.py
+│   ├── test_ocr_only.py
 │   └── test_integration.py
-├── invoices/              # Input PDF files
-├── output/                # Generated JSON files
-├── main.py               # Application entry point
-└── requirements.txt     # Dependencies
+├── invoices/             # Input PDF files
+├── output/               # Generated JSON files
+├── main.py              # Application entry point
+└── requirements.txt      # Dependencies
 ```
 
 ### Module Design Principles
 
-1. **Single Responsibility**: Each module has one clear purpose
-2. **Separation of Concerns**: API communication, processing, extraction, and output are separated
-3. **Modularity**: Modules can be used independently or together
-4. **Reusability**: Functions are designed to be reusable
-5. **Compliance First**: Extraction logic prioritizes OCR text extraction per requirements, with optional enhancements
+1. **Single Responsibility Principle (SRP)**: Each module/class has one clear purpose
+   - Extractors: Focused on specific extraction tasks
+   - Services: Business logic orchestration
+   - Validators: Validation logic only
+   - Core: Infrastructure utilities
+
+2. **Separation of Concerns**: Clear boundaries between layers
+   - API communication (clients)
+   - Document processing (processors)
+   - Data extraction (extractors)
+   - Business logic (services)
+   - Infrastructure (core)
+
+3. **Dependency Injection**: Components accept dependencies via constructor
+   - Enables testing with mocks
+   - Loose coupling between components
+
+4. **Modularity**: Modules can be used independently or together
+   - Each extractor is self-contained
+   - Services compose extractors and validators
+   - Core utilities are reusable
+
+5. **Reusability**: Functions and classes designed to be reusable
+   - Base classes provide common functionality
+   - Utility functions in core modules
+   - Configuration centralized
+
+6. **Compliance First**: Extraction logic prioritizes OCR text extraction per requirements, with optional enhancements
 
 ## Code Quality Standards
 
@@ -118,20 +162,28 @@ except Exception as e:
 ### Logging
 
 **Implementation**:
-- Comprehensive logging throughout the application
+- **Centralized Configuration**: All logging configured in `src/core/logging_config.py`
+- **No Duplication**: Single source of truth for logging setup
+- **Structured Logging**: Consistent format across all modules
 - Different log levels for different scenarios:
+  - DEBUG: Detailed debugging information
   - INFO: Normal operation, progress updates
   - WARNING: Recoverable issues, missing optional data
   - ERROR: Failures, exceptions
 - Structured log messages with context
 
-**Configuration**:
+**Usage**:
 ```python
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-)
+from ..core.logging_config import get_logger
+
+logger = get_logger(__name__)
+logger.info("Processing document")
 ```
+
+**Configuration**:
+- Configured via `Settings.log_level` and `Settings.log_format`
+- Environment variable: `LOG_LEVEL=INFO`
+- Centralized in `main.py` at application startup
 
 ## Testing Approach
 
@@ -273,16 +325,26 @@ Longer explanation if needed, wrapped at 72 characters.
 
 ### Efficiency Considerations
 
-1. **Regex Compilation**: Patterns are defined once, used multiple times
-2. **Lazy Evaluation**: Process documents one at a time to manage memory
-3. **Early Exit**: Stop processing when possible (e.g., format validation)
-4. **Batch Processing**: Support for processing multiple files efficiently
+1. **Pre-compiled Regex Patterns**: All patterns compiled once in `PatternConfig`, reused across extractors
+2. **API Response Caching**: Cache API responses by file hash to reduce costs (50-80% reduction)
+3. **Lazy Evaluation**: Process documents one at a time to manage memory
+4. **Early Exit**: Stop processing when possible (e.g., format validation)
+5. **Batch Processing**: Support for processing multiple files efficiently
+6. **Circuit Breaker**: Prevents wasted API calls during outages
 
 ### Memory Management
 
 - Process documents individually rather than loading all into memory
 - Clear large variables when no longer needed
 - Use generators where appropriate
+- Cache management with TTL to prevent memory bloat
+
+### Cost Optimization
+
+- **API Caching**: Reduces API calls for repeated files
+- **Circuit Breaker**: Stops requests when API is down (saves costs)
+- **Retry Logic**: Prevents unnecessary retries with exponential backoff
+- **Caching**: Track API usage and reduce costs
 
 ## Maintainability
 
@@ -296,9 +358,26 @@ Longer explanation if needed, wrapped at 72 characters.
 ### Extensibility
 
 1. **Modular Design**: Easy to add new extraction patterns
+   - New extractors extend `BaseExtractor`
+   - Add to `extractors/` module
+   - Register in `HybridExtractor` if needed
+
 2. **Configuration**: Patterns and thresholds can be adjusted
-3. **Plugin Architecture**: Could be extended to support plugins
-4. **API Design**: Clean interfaces between modules
+   - All patterns in `config/patterns.py`
+   - Settings in `config/settings.py`
+   - Environment variable based
+
+3. **Dependency Injection**: Easy to swap implementations
+   - Services accept dependencies via constructor
+   - Testable with mocks
+
+4. **Clean Interfaces**: Protocol-based interfaces
+   - `IValidator` protocol for validators
+   - Easy to add new validators
+
+5. **Service Layer**: Business logic separated from extraction
+   - Easy to add new services
+   - Services compose lower-level components
 
 ## Documentation Standards
 

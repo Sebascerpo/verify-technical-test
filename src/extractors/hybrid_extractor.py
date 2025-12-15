@@ -10,8 +10,10 @@ from .ocr_extractor import OCRExtractor
 from .structured_extractor import StructuredExtractor
 from .line_item_extractor import LineItemExtractor
 from ..core.logging_config import get_logger
+from ..config.settings import get_settings
 
 logger = get_logger(__name__)
+settings = get_settings()
 
 
 class HybridExtractor(BaseExtractor):
@@ -50,9 +52,9 @@ class HybridExtractor(BaseExtractor):
         if ocr_text is None and response:
             ocr_text = response.get('ocr_text', '')
         
-        # Extract from structured data first
+        # Extract from structured data first (if enabled)
         structured_data = {}
-        if response:
+        if response and settings.use_structured_data:
             structured_data = self.structured_extractor.extract_all_fields(response=response)
             # Extract line items from structured data
             structured_data['line_items'] = self.line_item_extractor.extract_from_structured(response)

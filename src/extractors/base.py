@@ -10,8 +10,6 @@ from datetime import datetime
 from ..config.patterns import get_patterns
 from ..core.logging_config import get_logger
 
-logger = get_logger(__name__)
-
 
 class BaseExtractor(ABC):
     """

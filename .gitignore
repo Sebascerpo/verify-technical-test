@@ -54,9 +54,6 @@ htmlcov/
 dmypy.json
 
 # Output files
-output/
-*.json
-!example_output.json
 
 # Logs
 *.log

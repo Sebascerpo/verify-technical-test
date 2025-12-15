@@ -3,7 +3,7 @@ Unit tests for line item extraction.
 """
 
 import pytest
-from src.invoice_extractor import InvoiceExtractor
+from src.extractors.ocr_extractor import OCRExtractor
 
 
 class TestLineItemExtraction:
@@ -11,7 +11,7 @@ class TestLineItemExtraction:
     
     def setup_method(self):
         """Set up test fixtures."""
-        self.extractor = InvoiceExtractor()
+        self.extractor = OCRExtractor()
     
     def test_extract_line_items_simple(self):
         """Test extraction of simple line items."""

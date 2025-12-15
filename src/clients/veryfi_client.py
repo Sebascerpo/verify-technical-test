@@ -5,17 +5,21 @@ Handles communication with Veryfi OCR API to extract text from PDF documents.
 """
 
 import os
+import hashlib
 from typing import Optional, Dict, Any, List
 from dotenv import load_dotenv
 import veryfi
 from ..core.logging_config import get_logger
-from ..core.retry import retry
+from ..core.retry import retry, CircuitBreaker
 from ..core.exceptions import APIError
+from ..core.cache import get_cache
+from ..config.settings import get_settings
 
 # Load environment variables
 load_dotenv()
 
 logger = get_logger(__name__)
+settings = get_settings()
 
 
 class VeryfiClient:
@@ -50,11 +54,42 @@ class VeryfiClient:
             api_key=self.api_key
         )
         
+        # Initialize cache if enabled
+        self.cache = get_cache() if settings.enable_caching else None
+        
+        # Initialize circuit breaker for API calls
+        # Opens after 5 failures, recovers after 60 seconds
+        self.circuit_breaker = CircuitBreaker(
+            failure_threshold=5,
+            recovery_timeout=60,
+            expected_exception=Exception
+        )
+        
         logger.info("Veryfi client initialized successfully")
+        if settings.enable_caching:
+            logger.info(f"Caching enabled with TTL: {settings.cache_ttl}s")
+        logger.info("Circuit breaker enabled for API calls")
+    
+    def _get_file_hash(self, file_path: str) -> str:
+        """
+        Generate hash of file content for cache key.
+        
+        Args:
+            file_path: Path to file
+            
+        Returns:
+            SHA256 hash of file content
+        """
+        hash_sha256 = hashlib.sha256()
+        with open(file_path, 'rb') as f:
+            for chunk in iter(lambda: f.read(4096), b""):
+                hash_sha256.update(chunk)
+        return hash_sha256.hexdigest()
     
     def process_document(self, file_path: str) -> Optional[Dict[str, Any]]:
         """
         Process a PDF document through Veryfi OCR API.
+        Uses caching if enabled to reduce API calls and costs.
         
         Args:
             file_path: Path to the PDF file to process
@@ -69,15 +104,32 @@ class VeryfiClient:
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"File not found: {file_path}")
         
+        # Check cache if enabled
+        cache_key = None
+        if self.cache and settings.enable_caching:
+            cache_key = f"veryfi_response:{self._get_file_hash(file_path)}"
+            cached_response = self.cache.get(cache_key)
+            if cached_response is not None:
+                logger.info(f"Cache hit for document: {file_path}")
+                return cached_response
+        
         try:
             logger.info(f"Processing document: {file_path}")
             
-            # Process document with Veryfi API (with retry)
+            # Process document with Veryfi API (with retry and circuit breaker)
             @retry(exceptions=(Exception,))
             def _process():
-                return self.client.process_document(file_path)
+                # Use circuit breaker to protect against cascading failures
+                return self.circuit_breaker.call(
+                    lambda: self.client.process_document(file_path)
+                )
             
             response = _process()
+            
+            # Cache response if enabled
+            if self.cache and settings.enable_caching and cache_key and response:
+                self.cache.set(cache_key, response)
+                logger.debug(f"Cached response for document: {file_path}")
             
             logger.info(f"Successfully processed document: {file_path}")
             return response

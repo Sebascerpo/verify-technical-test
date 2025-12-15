@@ -3,7 +3,7 @@ Unit tests for vendor information extraction.
 """
 
 import pytest
-from src.invoice_extractor import InvoiceExtractor
+from src.extractors.ocr_extractor import OCRExtractor
 
 
 class TestVendorExtraction:
@@ -11,7 +11,7 @@ class TestVendorExtraction:
     
     def setup_method(self):
         """Set up test fixtures."""
-        self.extractor = InvoiceExtractor()
+        self.extractor = OCRExtractor()
     
     def test_extract_vendor_name_simple(self):
         """Test extraction of simple vendor name."""

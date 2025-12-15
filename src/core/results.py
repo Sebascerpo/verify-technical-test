@@ -46,17 +46,3 @@ class Result(Generic[T]):
         """Get the error message."""
         return self.error
 
-
-class Success(Result[T]):
-    """Success result type."""
-    
-    def __init__(self, value: T):
-        super().__init__(success=True, value=value)
-
-
-class Failure(Result[T]):
-    """Failure result type."""
-    
-    def __init__(self, error: str):
-        super().__init__(success=False, error=error)
-
