@@ -100,6 +100,11 @@ Process a specific invoice:
 python main.py --file invoices/synth-switch_v5-14.pdf
 ```
 
+Process a specific non-supported invoice:
+```bash
+python main.py --file non-supported-invoice/fv089090060802125EB48112325.pdf
+```
+
 ## Testing
 
 Run all tests:
