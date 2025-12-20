@@ -50,7 +50,7 @@ class Settings:
         )
         
         # Feature Flags
-        self.use_structured_data = os.getenv('USE_STRUCTURED_DATA', 'true').lower() == 'true'
+        self.use_structured_data = os.getenv('USE_STRUCTURED_DATA', 'false').lower() == 'true'
         self.use_hybrid_extraction = os.getenv('USE_HYBRID_EXTRACTION', 'true').lower() == 'true'
         self.enable_parallel_processing = os.getenv('ENABLE_PARALLEL_PROCESSING', 'false').lower() == 'true'
         self.max_workers = int(os.getenv('MAX_WORKERS', '4'))

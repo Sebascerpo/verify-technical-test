@@ -1,63 +1,103 @@
 {
   "vendor_name": "Switch, Ltd.",
-  "vendor_address": "PO Box 674592\nDallas, TX 75267-4592",
-  "bill_to_name": "Nu Life Health",
-  "invoice_number": "16005913",
-  "date": "09/11/2023",
+  "vendor_address": "23\t16005913\n\nNu Life Health\n228 East 45th Street\nNew York, NY 10017",
+  "bill_to_name": "",
+  "invoice_number": "674592",
+  "date": "",
   "line_items": [
     {
       "sku": "",
-      "description": "Carrier Taxes for Transport, 58 Gbps Wavelength Diverse between Sparks, OR 98765 and LasVegas, OR 56789",
-      "quantity": 6016.09,
-      "price": -1781.87,
+      "description": "Carrier Taxes for Transport, Gbps Wavelength Diverse between Sparks, OR and",
+      "quantity": 0.0,
+      "price": -58.0,
       "tax_rate": 0.0,
       "total": -10719890.29
     },
     {
       "sku": "",
-      "description": "Transport, 971 Gbps Fiber",
-      "quantity": 3372.59,
-      "price": 3868.31,
+      "description": "LasVegas, OR",
+      "quantity": 0.0,
+      "price": 567.0,
+      "tax_rate": 0.0,
+      "total": 3.0
+    },
+    {
+      "sku": "",
+      "description": "Transport, Gbps Fiber",
+      "quantity": 0.0,
+      "price": 971.0,
       "tax_rate": 0.0,
       "total": 13046223.62
     },
     {
       "sku": "",
-      "description": "Carrier Taxes for Transport, 486 Gbps Wavelength Diverse between Hillsboro, NV 56789 and Portland, NV 56789",
-      "quantity": 3593.22,
-      "price": 4915.32,
+      "description": "Carrier Taxes for Transport, Gbps Wavelength Diverse between Hillsboro, NV",
+      "quantity": 0.0,
+      "price": 486.0,
       "tax_rate": 0.0,
       "total": 17661826.13
     },
     {
+      "sku": "",
+      "description": "and Portland, NV",
+      "quantity": 0.0,
+      "price": 567.0,
+      "tax_rate": 0.0,
+      "total": 3.0
+    },
+    {
       "sku": "8963157731",
-      "description": "Transport, Switch Fiber Pair, Pairs, 10 Gbps Fiber",
-      "quantity": 1714.46,
-      "price": 1186.61,
+      "description": "Transport, Switch Fiber Pair, Pairs (/, Gbps Fiber",
+      "quantity": 0.0,
+      "price": 896.0,
       "tax_rate": 0.0,
       "total": 2034395.38
     },
     {
+      "sku": "",
+      "description": "to dHrINDY (OVAXLA) (/)",
+      "quantity": 0.0,
+      "price": 1.0,
+      "tax_rate": 0.0,
+      "total": 4.0
+    },
+    {
       "sku": "6450580404",
-      "description": "Transport, Switch Fiber Pair, Pairs, 10 Gbps Fiber",
-      "quantity": 3078.56,
-      "price": 5076.42,
+      "description": "Transport, Switch Fiber Pair, Pairs (/, Gbps Fiber",
+      "quantity": 0.0,
+      "price": 645.0,
       "tax_rate": 0.0,
       "total": 15628063.56
     },
     {
+      "sku": "",
+      "description": "toAIFIIqmG",
+      "quantity": 0.0,
+      "price": 14.0,
+      "tax_rate": 0.0,
+      "total": 4.0
+    },
+    {
       "sku": "9818139719",
-      "description": "Transport, Switch Fiber Pair, Pairs, 10 Gbps Fiber",
-      "quantity": 6480.38,
-      "price": 1340.91,
+      "description": "Transport, Switch Fiber Pair, Pairs (/, Gbps Fiber",
+      "quantity": 0.0,
+      "price": 981.0,
       "tax_rate": 0.0,
       "total": 8689606.35
+    },
+    {
+      "sku": "",
+      "description": "to gGPS Ef",
+      "quantity": 0.0,
+      "price": 1.0,
+      "tax_rate": 0.0,
+      "total": 3.0
     }
   ],
   "_metadata": {
-    "line_item_count": 6,
-    "total_amount": 46340224.75,
+    "line_item_count": 11,
+    "total_amount": 46340241.75,
     "source_file": "synth-switch_v5-7.pdf",
-    "extraction_timestamp": "2025-12-15T07:43:26.263604"
+    "extraction_timestamp": "2025-12-20T00:31:48.350687"
   }
 }
